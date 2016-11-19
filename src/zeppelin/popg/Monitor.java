@@ -22,7 +22,7 @@ public class Monitor {
         });
     }
     public void display(Object text){
-        varea.setText( String.format("%s%s%n", varea.getText() , text ) );
+        varea.setText( String.format("%s%s%n", text, varea.getText()) );
     }
     
     public void clear(){
