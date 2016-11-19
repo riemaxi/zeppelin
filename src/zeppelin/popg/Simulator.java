@@ -1,7 +1,5 @@
 package zeppelin.popg;
 
-
-import zeppelin.Parameter;
 import java.util.Random;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
@@ -53,29 +51,28 @@ public class Simulator{
     }
     
     public static void run(Consumer<Generation> consumer){
-       Parameter p = new Parameter();
        IntStream
-               .range(0,p.i("runs"))
+               .range(0,G.p.i("runs"))
                .forEach( run -> {
                    init();
                    IntStream
-                           .range(0, p.i("generations"))
-                           .forEach(gen -> consumer.accept(nextGeneration(run+1, gen + 1, p)) );
+                           .range(0, G.p.i("generations"))
+                           .forEach(gen -> consumer.accept(nextGeneration(run+1, gen + 1)) );
                });
         
     }
     
-    public static Generation nextGeneration(int r, int g, Parameter p){
+    public static Generation nextGeneration(int r, int g){
         run = r;
         gen = g;
-        A_a = p.d("A_a");
-        a_A = p.d("a_A");
-        sAA = p.d("fAA");
-        sAa = p.d("fAa");
-        saa = p.d("faa");
-        popSize = p.i("popSize");
+        A_a = G.p.d("A_a");
+        a_A = G.p.d("a_A");
+        sAA = G.p.d("fAA");
+        sAa = G.p.d("fAa");
+        saa = G.p.d("faa");
+        popSize = G.p.i("popSize");
         
-        long seed = p.l("seed",-1);
+        long seed = G.p.l("seed",-1);
         random = seed >= 0 ? new Random(seed) : new Random();
         
         update();
