@@ -16,13 +16,9 @@ public class Monitor {
     public Monitor(TextArea varea, String hint){
         this.varea = varea;
         display(hint);
-        this.varea.textProperty().addListener((ob,o,n) -> {
-            varea.selectPositionCaret(varea.getLength());
-            varea.deselect();
-        });
     }
     public void display(Object text){
-        varea.setText( String.format("%s%s%n", text, varea.getText()) );
+        varea.setText( String.format("%s%n%s", text, varea.getText()) );
     }
     
     public void clear(){

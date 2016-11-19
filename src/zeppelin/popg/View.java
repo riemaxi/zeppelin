@@ -21,13 +21,15 @@ public class View{
     private Pane varea;
     private int populations;
     private int generations;
+    private Color fixedColor;
+    private Color lostColor;
+    private Color defaultColor;
     
     public View(Pane varea){
         this.varea = varea;
         
         this.varea.widthProperty().addListener((v,ov,nv) -> wredraw(ov, nv));
         this.varea.heightProperty().addListener((v,ov,nv) -> hredraw(ov, nv));
-        
     }
     
     protected void wredraw(Number ov, Number nv){
@@ -59,19 +61,21 @@ public class View{
         populations = G.p.i("populations");        
         generations = G.p.i("generations");
         
+        fixedColor = Color.GREEN;
+        lostColor = Color.RED;
+        defaultColor = Color.BLUE;
+        
         varea.getChildren().clear();
         for(int i=0; i<populations; i++){
             Polyline p = new Polyline();
-            p.setStroke(Color.GRAY);
+            p.setStroke(defaultColor);
             p.setStrokeWidth(1);
             p.addEventHandler(MouseEvent.MOUSE_ENTERED, e -> {
                 Polyline pol = (Polyline)e.getTarget();
-                pol.setStroke(Color.BLACK);
                 pol.setStrokeWidth(4);} 
             );
             p.addEventHandler(MouseEvent.MOUSE_EXITED, e -> {
                 Polyline pol = (Polyline)e.getTarget();
-                pol.setStroke(Color.GRAY); 
                 pol.setStrokeWidth(1);
             });
                 
@@ -85,9 +89,15 @@ public class View{
         for(int i=0; i<freq.length; i++){
             Node n = nodes.get(i);
             Polyline pol = (Polyline)n;
-            pol.getPoints().add( (genr * varea.getPrefWidth()) / (generations-1));
-            pol.getPoints().add((1-freq[i]) * varea.getPrefHeight());
+            if (freq[i]>0){
+                pol.getPoints().add( (genr * varea.getPrefWidth()) / (generations-1));
+                pol.getPoints().add((1-freq[i]) * varea.getPrefHeight());
+                if (freq[i] == 1)
+                    pol.setStroke(fixedColor);
+            }else
+               pol.setStroke(lostColor);
         }
+        
         
     }
 }

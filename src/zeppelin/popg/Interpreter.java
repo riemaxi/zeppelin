@@ -6,6 +6,7 @@
 package zeppelin.popg;
 
 import java.util.Arrays;
+import javafx.application.Platform;
 import javafx.scene.control.TextArea;
 
 /**
@@ -16,6 +17,12 @@ public class Interpreter {
     private TextArea varea;
     public Interpreter(TextArea varea){
         this.varea = varea;
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                varea.requestFocus();
+            }
+       });
     }
     
     public Command process(String command){
