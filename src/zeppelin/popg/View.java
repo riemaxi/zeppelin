@@ -28,16 +28,16 @@ public class View{
     public View(Pane varea){
         this.varea = varea;
         
-        this.varea.widthProperty().addListener((v,ov,nv) -> wredraw(ov, nv));
-        this.varea.heightProperty().addListener((v,ov,nv) -> hredraw(ov, nv));
+        //this.varea.widthProperty().addListener((v,ov,nv) -> wredraw(ov, nv));
+        //this.varea.heightProperty().addListener((v,ov,nv) -> hredraw(ov, nv));
     }
     
-    protected void wredraw(Number ov, Number nv){
+    public void wredraw(Number ov, Number nv){
         varea.setPrefWidth(nv.intValue());
         scaleChart(ov.doubleValue(), nv.doubleValue(), varea.getPrefHeight(), varea.getPrefHeight());
     }
 
-    protected void hredraw(Number ov, Number nv){
+    public void hredraw(Number ov, Number nv){
         varea.setPrefHeight(nv.intValue());
         scaleChart(varea.getPrefWidth(), varea.getPrefWidth(), ov.doubleValue(), nv.doubleValue());
     }

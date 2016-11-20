@@ -6,6 +6,8 @@
 package zeppelin.popg;
 
 import javafx.scene.control.TextArea;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import zeppelin.Parameter;
 
@@ -17,16 +19,37 @@ public class Machine {
     private final View view;
     private final Monitor monitor;
     private final Interpreter interpreter;
+    private final Background background;
     private final Stats stats;
     
-    public Machine(TextArea intArea, TextArea monArea, Pane viewArea){
+    public Machine(
+            TextArea intArea, 
+            TextArea monArea, 
+            Pane viewArea,
+            AnchorPane backArea,
+            Pane xaxis,
+            Pane yaxis){
         view = new View(viewArea);
         monitor = new Monitor(monArea, G.p.getValues("gui.cmd."));
         interpreter = new Interpreter(intArea);
+        background = new Background(backArea, xaxis, yaxis);
         stats = new Stats();
+        
+        viewArea.widthProperty().addListener((v,ov,nv) -> wredraw(ov, nv));
+        viewArea.heightProperty().addListener((v,ov,nv) -> hredraw(ov, nv));
     }
     
-     public void execute(String command){
+    protected void wredraw(Number ov, Number nv){
+        view.wredraw(ov, nv);
+        background.drawXaxis(ov,nv);
+    }
+
+    protected void hredraw(Number ov, Number nv){
+        view.hredraw(ov, nv);
+        background.drawYaxis(ov,nv);
+    }
+    
+    public void execute(String command){
         Command cmd = interpreter.process(command);
         switch(cmd.id){
             case C.CMD_HINT : monitor.display(G.p.getValues("gui.cmd.")); break;
@@ -61,6 +84,7 @@ public class Machine {
      
      protected void runSimulator(){
          int run = G.p.i("run",1);
+         background.draw();
          view.reset();
          stats.init();
          Simulator.run(g -> {

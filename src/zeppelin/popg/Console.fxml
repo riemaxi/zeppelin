@@ -28,7 +28,13 @@
             </AnchorPane>
           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
                <children>
-                  <Pane fx:id="view" prefHeight="498.0" prefWidth="616.0" AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="8.0" AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="8.0" />
+                  <AnchorPane fx:id="background" prefHeight="498.0" prefWidth="616.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <children>
+                        <Pane fx:id="view" prefHeight="498.0" prefWidth="616.0" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0" BorderPane.alignment="CENTER" />
+                        <Pane fx:id="yaxis" prefHeight="200.0" prefWidth="50.0" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="10.0" />
+                        <Pane prefHeight="50.0" prefWidth="616.0" AnchorPane.bottomAnchor="4.0" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="10.0" fx:id="xaxis" />
+                    </children>
+                  </AnchorPane>
                </children>
             </AnchorPane>
         </items>

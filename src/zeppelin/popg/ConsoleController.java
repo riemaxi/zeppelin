@@ -14,6 +14,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import zeppelin.Parameter;
 
@@ -29,11 +31,17 @@ public class ConsoleController implements Initializable {
     TextArea interpreter;
     @FXML
     Pane view;
+    @FXML
+    Pane xaxis;
+    @FXML
+    Pane yaxis;
+    @FXML
+    AnchorPane background;
     
     Machine machine;
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        machine = new Machine(interpreter, monitor, view);
+        machine = new Machine(interpreter, monitor, view, background, xaxis, yaxis);
     }
     
     @FXML
