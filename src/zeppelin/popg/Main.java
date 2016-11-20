@@ -24,6 +24,8 @@ public class Main extends Application {
         
         Scene scene = new Scene(root);
         
+        stage.setMinHeight(G.p.i("gui.minheight", 300));
+        stage.setMinWidth(G.p.i("gui.minwidth", 500));
         stage.setTitle(G.p.s("gui.title"));
         stage.getIcons().add(new Image("zeppelin.jpg"));
         stage.setScene(scene);
