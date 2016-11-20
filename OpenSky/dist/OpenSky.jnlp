@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jnlp spec="1.0" xmlns:jfx="http://javafx.com" href="OpenSky.jnlp">
+  <information>
+    <title>OpenSky</title>
+    <vendor>Samuel</vendor>
+    <description>null</description>
+    <offline-allowed/>
+  </information>
+  <resources>
+    <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
+    <jar href="OpenSky.jar" size="49435" download="eager" />
+    <jar href="lib\bsh-2.0b4.jar" size="281694" download="eager" />
+  </resources>
+  <applet-desc  width="800" height="600" main-class="com.javafx.main.NoJavaFXFallback"  name="OpenSky" >
+    <param name="requiredFXVersion" value="8.0+"/>
+  </applet-desc>
+  <jfx:javafx-desc  width="800" height="600" main-class="zeppelin.Main"  name="OpenSky" />
+  <update check="always"/>
+</jnlp>
