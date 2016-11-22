@@ -101,8 +101,8 @@ public class Simulator{
     }
     
     protected static void update(){
-        for(int pop=0; pop<frequency.length; pop++){
-            frequency[pop] = nextFrequency(frequency[pop]);
-        }
+        IntStream
+                .range(0, frequency.length)
+                .forEach(pop -> frequency[pop] = nextFrequency(frequency[pop]));
     }
 }
