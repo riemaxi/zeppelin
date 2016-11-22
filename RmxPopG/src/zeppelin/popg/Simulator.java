@@ -82,8 +82,8 @@ public class Simulator{
     
     private static  int binomial(int n, double pp){
         return IntStream
-                .range(0,n)
-                .map(x -> random.nextFloat()<pp ? 1: 0)
+                .generate( () -> random.nextFloat() < pp ? 1 : 0)
+                .limit(n)
                 .sum();
     }
     
