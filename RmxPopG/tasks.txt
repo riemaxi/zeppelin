@@ -1,3 +1,0 @@
-- add alternative visualisation
-- add population growth (functional approach)
-- add scrolling through the generations 
