@@ -1,0 +1,3 @@
+- add alternative visualisation
+- add population growth 
+- add scrolling through the generations 
