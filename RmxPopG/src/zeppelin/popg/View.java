@@ -10,17 +10,28 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import javafx.animation.FadeTransition;
+import javafx.animation.PathTransition;
+import javafx.animation.ScaleTransition;
+import javafx.animation.Timeline;
+import javafx.animation.Transition;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Line;
+import javafx.scene.shape.Path;
 import javafx.scene.shape.Polyline;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.StrokeLineCap;
+import javafx.util.Duration;
 
 /**
  *
@@ -77,7 +88,7 @@ public class View{
         fixedColor = Color.GREEN;
         lostColor = Color.RED;
         defaultColor = Color.BLUE;
-        
+    
         varea.getChildren().clear();
         IntStream
                 .range(0,populations)
@@ -94,9 +105,43 @@ public class View{
                         Polyline pol = (Polyline)e.getTarget();
                         pol.setStrokeWidth(1);
                     });
-
                     varea.getChildren().add(p);
                 });
+        
+    }
+    
+    public void play(Function<Integer, Simulator.Generation> genf){
+        
+            
+        IntStream
+                .range(0, generations)
+                .forEach(genr -> {
+                    Simulator.Generation g = genf.apply(genr);
+                    double[] freq = g.frequency;
+                    ObservableList<Node> nodes = varea.getChildren();
+
+                    IntStream
+                            .range(0, populations)
+                            .forEach(i -> {
+                                Polyline pol = (Polyline)nodes.get(i);
+                                if (freq[i]>0){
+                                    pol.getPoints().add( (genr * varea.getPrefWidth()) / (generations-1));
+                                    pol.getPoints().add((1-freq[i]) * varea.getPrefHeight());
+                                    if (freq[i] == 1)
+                                        pol.setStroke(fixedColor);
+                                }else{
+                                   if (lastFreq[i]!=0){
+                                        pol.getPoints().add( (genr * varea.getPrefWidth()) / (generations-1));
+                                        pol.getPoints().add(varea.getPrefHeight());
+
+                                        pol.setStroke(lostColor);
+                                   }
+                                }
+                            });
+                    
+                    lastFreq = Arrays.copyOf(freq, freq.length);
+                });
+        
     }
     
     public void addGeneration(int genr, double[] freq){

@@ -17,13 +17,18 @@ import java.util.stream.IntStream;
  */
 public class Simulator{
     public static class Generation{
-        public int runr;
+        public int runr = 1;
         public int genr;
-        public double[] frquency;
+        public double[] frequency;
+        public Generation set(double[] frequency){
+            this.frequency = frequency;
+            return this;
+        }
+        
         public Generation set(int runr, int genr, double[] frequency){
             this.runr = runr;
             this.genr = genr;
-            this.frquency = frequency;
+            this.frequency = frequency;
             return this;
         }
     }
@@ -63,14 +68,6 @@ public class Simulator{
     }
     
     public static void run(Consumer<Generation> consumer){
-        for(int run=0; run<G.p.i("runs"); run++){
-            init();
-            for(int gen=0; gen<generations; gen++)
-                consumer.accept(nextGeneration(run+1, gen + 1));
-        }
-    }
-    
-    public static void _run(Consumer<Generation> consumer){
        IntStream
                .range(0,G.p.i("runs"))
                .forEach( run -> {
@@ -85,6 +82,11 @@ public class Simulator{
     public static Generation nextGeneration(int r, int g){
         update();
         return generation.set(r, g,  frequency);
+    }
+
+    public static Generation nextGeneration(int g){
+        update();
+        return generation.set(frequency);
     }
     
     private static  int binomial(int n, double pp){

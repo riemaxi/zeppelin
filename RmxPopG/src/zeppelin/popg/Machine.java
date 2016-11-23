@@ -84,6 +84,19 @@ public class Machine {
      }
      
      protected void runSimulator(){
+         background.draw();
+         view.reset();
+         stats.init();
+         Simulator.init();
+         view.play(genr -> {
+             Simulator.Generation gen = Simulator.nextGeneration(genr); 
+             stats.gather(genr, gen.frequency); 
+             return gen;
+         } );
+         monitor.display(getStats());         
+     }
+     
+     protected void _runSimulator(){
          int run = G.p.i("run",1);
          background.draw();
          view.reset();
@@ -91,8 +104,8 @@ public class Machine {
          
          Simulator.run(g -> {
              if (g.runr == run){
-                view.addGeneration(g.genr-1, g.frquency);
-                stats.gather(g.genr, g.frquency);
+                view.addGeneration(g.genr-1, g.frequency);
+                stats.gather(g.genr, g.frequency);
              }
          });
          monitor.display(getStats());
