@@ -2,6 +2,7 @@ package zeppelin.popg;
 
 import java.util.Random;
 import java.util.function.Consumer;
+import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 
 /*
@@ -54,14 +55,22 @@ public class Simulator{
         long seed = G.p.l("seed",-1);
         random = seed >= 0 ? new Random(seed) : new Random();
         
-        double freq = G.p.d("initFreq");
-        
-        frequency = new double[G.p.i("populations")];
-        for(int i=0; i<frequency.length; i++)
-            frequency[i] = freq;
+        frequency = DoubleStream
+                .generate(() -> G.p.d("initFreq"))
+                .parallel()
+                .limit(G.p.i("populations"))
+                .toArray();
     }
     
     public static void run(Consumer<Generation> consumer){
+        for(int run=0; run<G.p.i("runs"); run++){
+            init();
+            for(int gen=0; gen<generations; gen++)
+                consumer.accept(nextGeneration(run+1, gen + 1));
+        }
+    }
+    
+    public static void _run(Consumer<Generation> consumer){
        IntStream
                .range(0,G.p.i("runs"))
                .forEach( run -> {
@@ -81,6 +90,7 @@ public class Simulator{
     private static  int binomial(int n, double pp){
         return IntStream
                 .generate( () -> random.nextFloat() < pp ? 1 : 0)
+                .parallel()
                 .limit(n)
                 .sum();
     }
@@ -103,6 +113,7 @@ public class Simulator{
     protected static void update(){
         IntStream
                 .range(0, frequency.length)
+                .parallel()
                 .forEach(pop -> frequency[pop] = nextFrequency(frequency[pop]));
     }
 }

@@ -5,13 +5,22 @@
  */
 package zeppelin.popg;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.DoubleStream;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polyline;
+import javafx.scene.shape.StrokeLineCap;
 
 /**
  *
@@ -22,14 +31,12 @@ public class View{
     private int populations;
     private int generations;
     private Color fixedColor;
-    private Color lostColor;
     private Color defaultColor;
+    private Color lostColor;
+    private double[] lastFreq;
     
     public View(Pane varea){
         this.varea = varea;
-        
-        //this.varea.widthProperty().addListener((v,ov,nv) -> wredraw(ov, nv));
-        //this.varea.heightProperty().addListener((v,ov,nv) -> hredraw(ov, nv));
     }
     
     public void wredraw(Number ov, Number nv){
@@ -43,61 +50,77 @@ public class View{
     }
     
     protected void scaleChart(double owidth, double width, double oheight, double height){
-        for(Node n : varea.getChildren()){
-            Polyline p = (Polyline)n;
-            ObservableList<Double> points = p.getPoints();
-            for(int i=0; i<points.size(); i+=2){
-                double v = points.get(i);
-                points.set(i, v*width/owidth);
-                
-                v = points.get(i+1);
-                points.set(i+1, v*height/oheight);
-            }
-        }
+        varea.getChildren()
+                .stream()
+                .forEach(n -> {
+                    Polyline p = (Polyline)n;
+                    ObservableList<Double> points = p.getPoints();
+                    IntStream
+                            .range(0, points.size()/2)
+                            .forEach(i -> {
+                                double v = points.get(2*i);
+                                points.set(2*i, v*width/owidth);
+
+                                v = points.get(2*i+1);
+                                points.set(2*i+1, v*height/oheight);
+
+                            });
+                });
     }
-    
     
     public void reset(){
         populations = G.p.i("populations");        
         generations = G.p.i("generations");
+        
+        lastFreq = DoubleStream.generate(()->G.p.d("initFreq")).limit(populations).toArray();
         
         fixedColor = Color.GREEN;
         lostColor = Color.RED;
         defaultColor = Color.BLUE;
         
         varea.getChildren().clear();
-        for(int i=0; i<populations; i++){
-            Polyline p = new Polyline();
-            p.setStroke(defaultColor);
-            p.setStrokeWidth(1);
-            p.addEventHandler(MouseEvent.MOUSE_ENTERED, e -> {
-                Polyline pol = (Polyline)e.getTarget();
-                pol.setStrokeWidth(4);} 
-            );
-            p.addEventHandler(MouseEvent.MOUSE_EXITED, e -> {
-                Polyline pol = (Polyline)e.getTarget();
-                pol.setStrokeWidth(1);
-            });
-                
-            varea.getChildren().add(p);
-        }
-        
+        IntStream
+                .range(0,populations)
+                .forEach( i ->{
+                    Polyline p = new Polyline();
+                    p.setStroke(defaultColor);
+                    p.setStrokeWidth(1);
+                    p.setStrokeLineCap(StrokeLineCap.ROUND);
+                    p.addEventHandler(MouseEvent.MOUSE_ENTERED, e -> {
+                        Polyline pol = (Polyline)e.getTarget();
+                        pol.setStrokeWidth(4);} 
+                    );
+                    p.addEventHandler(MouseEvent.MOUSE_EXITED, e -> {
+                        Polyline pol = (Polyline)e.getTarget();
+                        pol.setStrokeWidth(1);
+                    });
+
+                    varea.getChildren().add(p);
+                });
     }
     
     public void addGeneration(int genr, double[] freq){
         ObservableList<Node> nodes = varea.getChildren();
-        for(int i=0; i<freq.length; i++){
-            Node n = nodes.get(i);
-            Polyline pol = (Polyline)n;
-            if (freq[i]>0){
-                pol.getPoints().add( (genr * varea.getPrefWidth()) / (generations-1));
-                pol.getPoints().add((1-freq[i]) * varea.getPrefHeight());
-                if (freq[i] == 1)
-                    pol.setStroke(fixedColor);
-            }else
-               pol.setStroke(lostColor);
-        }
-        
-        
+        IntStream
+                .range(0, freq.length)
+                .parallel()
+                .forEach(i -> {
+                    Polyline pol = (Polyline)nodes.get(i);
+                    if (freq[i]>0){
+                        pol.getPoints().add( (genr * varea.getPrefWidth()) / (generations-1));
+                        pol.getPoints().add((1-freq[i]) * varea.getPrefHeight());
+                        if (freq[i] == 1)
+                            pol.setStroke(fixedColor);
+                    }else{
+                       if (lastFreq[i]!=0){
+                            pol.getPoints().add( (genr * varea.getPrefWidth()) / (generations-1));
+                            pol.getPoints().add(varea.getPrefHeight());
+                           
+                            pol.setStroke(lostColor);
+                       }
+                    }
+            });
+        lastFreq = Arrays.copyOf(freq, freq.length);
     }
+    
 }

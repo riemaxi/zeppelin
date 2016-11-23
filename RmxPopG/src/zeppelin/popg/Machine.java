@@ -5,6 +5,7 @@
  */
 package zeppelin.popg;
 
+import javafx.application.Platform;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
@@ -87,6 +88,7 @@ public class Machine {
          background.draw();
          view.reset();
          stats.init();
+         
          Simulator.run(g -> {
              if (g.runr == run){
                 view.addGeneration(g.genr-1, g.frquency);
