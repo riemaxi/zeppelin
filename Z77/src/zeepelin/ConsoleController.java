@@ -24,10 +24,10 @@ public class ConsoleController implements Initializable {
     AnchorPane frame;
     @FXML
     Canvas view;
-    View v;
+    Engine v;
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        v = new View(view);
+        v = new Engine(view);
         
         frame.heightProperty().addListener((ob,o,n) -> v.adjust(o, n, false ));
         frame.widthProperty().addListener((ob,o,n) -> v.adjust(o, n, true ));

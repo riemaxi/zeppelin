@@ -24,55 +24,36 @@ import javafx.scene.shape.Polyline;
  *
  * @author Samuel
  */
-public class View {
+public class Engine {
     static class Point{
-        double _x;
-        double _y;
-        double scx = 1;
-        double scy = 1;
-        public Point(double x, double scx, double y, double scy){
-            this._x = x;
-            this._y = y;
-            this.scx = scx;
-            this.scy = scy;
-        }
-        
-        void scale(double scx, double scy){
-            this.scx = scx;
-            this.scy = scy;
-        }
-        
-        double x(){
-            return _x * scx;
-        }
-        double y(){
-            return _y * scy;
+        double x;
+        double y;
+        public Point(double x, double y){
+            this.x = x;
+            this.y = y;
         }
     }
+    
     static class Segment{
         Point point;
         Color color;
         double width = 1;
-        public Segment(double x, double scx, double y, double scy, Color color){
-            this.point = new Point(x, scx, y, scy);
+        public Segment(double x, double y, Color color){
+            this.point = new Point(x, y);
             this.color = color;
         }
         
         public Segment(Segment s){
-            this(s.point._x, s.point.scx, s.point._y, s.point.scy, s.color);
+            this(s.point.x, s.point.y, s.color);
         }
         
         void set(Segment s){
-            this.point = new Point(s.point._x, s.point.scx, s.point._y, s.point.scy);
+            this.point = new Point(s.point.x, s.point.y);
             this.color = new Color(s.color.getRed(),s.color.getGreen(),s.color.getBlue(),s.color.getOpacity());
         }
 
         void set(Color c){
             this.color = new Color(c.getRed(),c.getGreen(),c.getBlue(),c.getOpacity());
-        }
-        
-        void scale(double scx, double scy){
-            point.scale(scx,scy);
         }
     }
     
@@ -103,13 +84,14 @@ public class View {
     private double[] lastFreq;
     private Evolution evolution;
     private int speed = 100;
+    private double xscale;
+    private double yscale;
     
-    public View(Canvas varea){
+    public Engine(Canvas varea){
         this.varea = varea;
         bmargin = AnchorPane.getBottomAnchor(varea).doubleValue();
         rmargin = AnchorPane.getRightAnchor(varea).doubleValue();
         evolution = new Evolution();
-
     }
     
     public void reset(){
@@ -127,20 +109,13 @@ public class View {
                 .generate(() -> new Track())
                 .limit(populations)
                 .forEach( track -> evolution.tracks.add(track));
+        
+        setScale();        
     }
     
-    protected void adjustTracks(){
-        evolution
-                .tracks
-                .stream()
-                .forEach(track -> {
-                    track
-                            .segments
-                            .stream()
-                            .forEach(segment -> {
-                               segment.scale(varea.getWidth()/(generations-1),varea.getHeight());
-                            });
-                });
+    protected void setScale(){
+       xscale = varea.getWidth()/(generations-1);
+       yscale = varea.getHeight();
     }
     
     public void adjust(Number o, Number n, boolean width){
@@ -149,7 +124,8 @@ public class View {
         else
             varea.setHeight(n.doubleValue() - 2*bmargin);
 
-        adjustTracks();
+        setScale();
+        
         paint();        
     }
     
@@ -159,23 +135,21 @@ public class View {
                 .tracks
                 .stream()
                 .forEach(track -> {
-                    if (track.segments.size()>1){
-                        Segment a = new Segment(track.segments.get(0));
-                        for(int i=1; i<track.segments.size(); i++){
-                            Segment b = track.segments.get(i);
-                            gc.setStroke(a.color);
-                            gc.setLineWidth(a.width);
-                            gc.strokeLine(a.point.x(),a.point.y(),b.point.x(), b.point.y());
-                            
-                            a.set(b);
-                        }
-                    }
-                });
+                    IntStream
+                            .range(1, track.segments.size()-1)
+                            .forEach(i -> {
+                                Segment a = track.segments.get(i);
+                                Segment b = track.segments.get(i+1);
+                                gc.setStroke(a.color);
+                                gc.setLineWidth(a.width);
+                                gc.strokeLine(a.point.x * xscale ,a.point.y * yscale, b.point.x * xscale, b.point.y * yscale);
+                            });
+                    });
     }
     
     protected void paint(){
         GraphicsContext gc = varea.getGraphicsContext2D();
-        gc.setFill(Color.LIGHTGRAY);
+        gc.setFill(Color.WHITESMOKE);
         gc.fillRect(0, 0, varea.getWidth(), varea.getHeight());
         
        paintTracks();
@@ -190,15 +164,13 @@ public class View {
                             .forEach(i -> {
                                 Track track = evolution.tracks.get(i);
                                 if (freq[i]>0){
-                                    track.segments.add(new Segment(g.genr, varea.getWidth()/(generations-1), 
-                                                                    1-freq[i], varea.getHeight(), defaultColor));
+                                    track.segments.add(new Segment(g.genr,  1-freq[i], defaultColor));
                                     
                                     if (freq[i] == 1)
                                         track.setColor(fixedColor);
                                 }else{
                                    if (lastFreq[i]!=0){
-                                        track.segments.add(new Segment(g.genr, varea.getWidth() / (generations-1), 
-                                                                    1-freq[i], varea.getHeight(), lostColor));
+                                        track.segments.add(new Segment(g.genr,1-freq[i], lostColor));
                        
                                         track.setColor(lostColor);
                                    }
