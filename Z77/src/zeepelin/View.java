@@ -232,36 +232,4 @@ public class View {
                     
                     lastFreq = Arrays.copyOf(freq, freq.length);
     }
-    
-    public void _pplay(Function<Integer, Simulator.Generation> genf){
-        IntStream
-                .range(0, generations)
-                .forEach(genr -> {
-                    Simulator.Generation g = genf.apply(genr);
-                    double[] freq = g.frequency;
-
-                    IntStream
-                            .range(0, populations)
-                            .parallel()
-                            .forEach(i -> {
-                                Track track = evolution.tracks.get(i);
-                                if (freq[i]>0){
-                                    track.segments.add(new Segment(genr, varea.getWidth()/(generations-1), 
-                                                                    1-freq[i], varea.getHeight(), defaultColor));
-                                    
-                                    if (freq[i] == 1)
-                                        track.setColor(fixedColor);
-                                }else{
-                                   if (lastFreq[i]!=0){
-                                        track.segments.add(new Segment(genr, varea.getWidth() / (generations-1), 
-                                                                    1-freq[i], varea.getHeight(), lostColor));
-                       
-                                        track.setColor(lostColor);
-                                   }
-                                }
-                            });
-                    
-                    lastFreq = Arrays.copyOf(freq, freq.length);
-                });
-    }
 }
