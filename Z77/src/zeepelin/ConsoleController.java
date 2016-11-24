@@ -41,7 +41,7 @@ public class ConsoleController implements Initializable {
     protected void runSimulation(){
         v.reset();
         Simulator.init();
-        v.play(Simulator::nextGeneration);
+        v.play(genr -> Simulator.nextGeneration(genr));
     }
     
 }

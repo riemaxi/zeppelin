@@ -12,6 +12,7 @@ import java.util.function.Function;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -101,6 +102,7 @@ public class View {
     private Color lostColor;
     private double[] lastFreq;
     private Evolution evolution;
+    private int speed = 100;
     
     public View(Canvas varea){
         this.varea = varea;
@@ -180,6 +182,58 @@ public class View {
     }
     
     public void play(Function<Integer, Simulator.Generation> genf){
+        AnimationTimer timer = new AnimationTimer() {
+            int genr = 0;
+            long counter;
+            @Override
+            public void handle(long now) {
+                if (genr<generations){
+                    if (counter == 0){
+                        addGeneration(genf.apply(genr));
+                        paint();
+                        genr++;
+                    }
+                }
+                else{
+                    this.stop();
+                    paint();
+                }
+
+                counter %= speed;
+            }
+        };
+        
+        timer.start();
+    }
+    
+    protected void addGeneration(Simulator.Generation g){
+                    double[] freq = g.frequency;
+
+                    IntStream
+                            .range(0, populations)
+                            .parallel()
+                            .forEach(i -> {
+                                Track track = evolution.tracks.get(i);
+                                if (freq[i]>0){
+                                    track.segments.add(new Segment(g.genr, varea.getWidth()/(generations-1), 
+                                                                    1-freq[i], varea.getHeight(), defaultColor));
+                                    
+                                    if (freq[i] == 1)
+                                        track.setColor(fixedColor);
+                                }else{
+                                   if (lastFreq[i]!=0){
+                                        track.segments.add(new Segment(g.genr, varea.getWidth() / (generations-1), 
+                                                                    1-freq[i], varea.getHeight(), lostColor));
+                       
+                                        track.setColor(lostColor);
+                                   }
+                                }
+                            });
+                    
+                    lastFreq = Arrays.copyOf(freq, freq.length);
+    }
+    
+    public void _pplay(Function<Integer, Simulator.Generation> genf){
         IntStream
                 .range(0, generations)
                 .forEach(genr -> {
@@ -188,6 +242,7 @@ public class View {
 
                     IntStream
                             .range(0, populations)
+                            .parallel()
                             .forEach(i -> {
                                 Track track = evolution.tracks.get(i);
                                 if (freq[i]>0){
@@ -207,7 +262,6 @@ public class View {
                             });
                     
                     lastFreq = Arrays.copyOf(freq, freq.length);
-                    paint();
                 });
     }
 }

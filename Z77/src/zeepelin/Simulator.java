@@ -65,7 +65,7 @@ public class Simulator{
     
     public static Generation nextGeneration(int g){
         update();
-        return generation.set(frequency);
+        return generation.set(g,frequency);
     }
     
     private static  int binomial(int n, double pp){
