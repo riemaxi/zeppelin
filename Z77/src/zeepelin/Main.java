@@ -24,6 +24,8 @@ public class Main extends Application {
         
         Scene scene = new Scene(root);
         
+        stage.setMinHeight(400);
+        stage.setMinWidth(800);
         stage.setTitle(C.TITLE);
         stage.getIcons().add(new Image(C.ICON));
         stage.setScene(scene);

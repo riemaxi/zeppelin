@@ -246,7 +246,11 @@ public class View {
     public void play(Function<Integer, Simulator.Generation> genf){
         if (player == null)
             player = new Player(genf);
-        player.stop();
+        else
+            player.stop();        
+        
+        player.genf = genf;
         player.start();
+
     }
 }
