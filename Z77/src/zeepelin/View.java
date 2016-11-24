@@ -181,31 +181,6 @@ public class View {
        paintTracks();
     }
     
-    public void play(Function<Integer, Simulator.Generation> genf){
-        AnimationTimer timer = new AnimationTimer() {
-            int genr = 0;
-            long counter;
-            @Override
-            public void handle(long now) {
-                if (genr<generations){
-                    if (counter == 0){
-                        addGeneration(genf.apply(genr));
-                        paint();
-                        genr++;
-                    }
-                }
-                else{
-                    this.stop();
-                    paint();
-                }
-
-                counter %= speed;
-            }
-        };
-        
-        timer.start();
-    }
-    
     protected void addGeneration(Simulator.Generation g){
                     double[] freq = g.frequency;
 
@@ -231,5 +206,47 @@ public class View {
                             });
                     
                     lastFreq = Arrays.copyOf(freq, freq.length);
+    }
+    
+
+    private class Player extends AnimationTimer {
+        int genr = 0;
+        long counter;
+        Function<Integer, Simulator.Generation> genf;
+        Player(Function<Integer, Simulator.Generation> genf){
+            this.genf = genf;
+        }
+        @Override
+        public void stop(){
+            genr = 0;
+            counter = 0;
+            super.stop();
+        }
+        
+        @Override
+        public void handle(long now) {
+            if (genr<generations){
+                if (counter == 0){
+                    addGeneration(genf.apply(genr));
+                    paint();
+                    genr++;
+                }
+            }
+            else{
+                this.stop();
+                paint();
+            }
+
+            counter %= speed;
+        }
+    };
+    
+    private Player player;
+    
+    public void play(Function<Integer, Simulator.Generation> genf){
+        if (player == null)
+            player = new Player(genf);
+        player.stop();
+        player.start();
     }
 }
