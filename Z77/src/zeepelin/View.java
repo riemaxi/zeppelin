@@ -215,12 +215,14 @@ public class View {
         Function<Integer, Simulator.Generation> genf;
         Player(Function<Integer, Simulator.Generation> genf){
             this.genf = genf;
+            start();
         }
-        @Override
-        public void stop(){
+
+        public void start(Function<Integer, Simulator.Generation> genf){
+            this.genf = genf;
             genr = 0;
             counter = 0;
-            super.stop();
+            super.start();
         }
         
         @Override
@@ -247,10 +249,6 @@ public class View {
         if (player == null)
             player = new Player(genf);
         else
-            player.stop();        
-        
-        player.genf = genf;
-        player.start();
-
+            player.start(genf);        
     }
 }
