@@ -1,15 +1,13 @@
 #simulation parameters
-generations: 500
-populations: 10
+generations: 5000
+populations: 100
 A_a: 0.0
 a_A: 0.0
 fAA: 1.0
 fAa: 1.0
 faa: 1.0
-popSize: 100
+popSize: 400
 initFreq: 0.5
-runs:10
-run: 1
 
 #GUI
 gui.title: Zeep77 Population Genetics

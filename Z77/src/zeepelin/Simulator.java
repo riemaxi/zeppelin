@@ -86,9 +86,9 @@ public class Simulator{
             double pp2 = (2.0 * p * q * sAa) / w;
 
             int nx = binomial(popSize, pp1);
-            int ny = pp1 < 1.0 && nx < popSize ? binomial(popSize - nx, (pp2 / (1.0 - pp1))) : 0;
+            double ny = pp1 < 1.0 && nx < popSize ? binomial(popSize - nx, (pp2 / (1.0 - pp1)))/2.0 : 0;
 
-            return ((nx * 2.0) + ny) / (2.0*popSize);
+            return (nx + ny) / popSize; 
     }
     
     protected static void update(){

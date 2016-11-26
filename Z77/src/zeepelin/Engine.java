@@ -209,10 +209,15 @@ public class Engine {
                     addGeneration(genf.apply(genr));
                     paintTracks(0);
                     genr++;
+                    
+                    //if all either fixed or lost then stop playing
+                    if (DoubleStream.of(lastFreq).filter(f -> 0<f && f<1).count() == 0){
+                        stop();
+                    }
                 }
             }
             else{
-                this.stop();
+                stop();
                 paintTracks(0);
             }
 
