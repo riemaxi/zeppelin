@@ -149,7 +149,7 @@ public class Engine {
     
     protected void clearBackground(){
         GraphicsContext gc = varea.getGraphicsContext2D();
-        gc.setFill(Color.WHITESMOKE);
+        gc.setFill(Color.valueOf(G.p.s("gui.background.color",C.BACKGROUND)));
         gc.fillRect(0, 0, varea.getWidth(), varea.getHeight());
     }
     

@@ -26,8 +26,8 @@ public class Main extends Application {
         
         stage.setMinHeight(400);
         stage.setMinWidth(800);
-        stage.setTitle(C.TITLE);
-        stage.getIcons().add(new Image(C.ICON));
+        stage.setTitle(G.p.s("gui.title",C.TITLE));
+        stage.getIcons().add(new Image(G.p.s("gui.icon", C.ICON)));
         stage.setScene(scene);
         stage.show();
     }

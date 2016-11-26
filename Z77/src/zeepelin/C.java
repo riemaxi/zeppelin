@@ -12,4 +12,5 @@ package zeepelin;
 public interface C {
     String TITLE = "Z77 Population Genetics";
     String ICON = "icon.jpg";
+    String BACKGROUND = "WHITESMOKE";
 }
