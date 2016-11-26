@@ -126,17 +126,17 @@ public class Engine {
 
         setScale();
         
-        paint();        
+        paint(0);        
     }
     
-    protected void paintTracks(){
+    protected void paintTracks(int genr){
         GraphicsContext gc = varea.getGraphicsContext2D();
         evolution
                 .tracks
                 .stream()
                 .forEach(track -> {
                     IntStream
-                            .range(1, track.segments.size()-1)
+                            .range(genr, track.segments.size()-1)
                             .forEach(i -> {
                                 Segment a = track.segments.get(i);
                                 Segment b = track.segments.get(i+1);
@@ -147,12 +147,15 @@ public class Engine {
                     });
     }
     
-    protected void paint(){
+    protected void clearBackground(){
         GraphicsContext gc = varea.getGraphicsContext2D();
         gc.setFill(Color.WHITESMOKE);
         gc.fillRect(0, 0, varea.getWidth(), varea.getHeight());
-        
-       paintTracks();
+    }
+    
+    protected void paint(int genr){
+        clearBackground();
+       paintTracks(genr);
     }
     
     protected void addGeneration(Simulator.Generation g){
@@ -171,7 +174,6 @@ public class Engine {
                                 }else{
                                    if (lastFreq[i]!=0){
                                         track.segments.add(new Segment(g.genr,1-freq[i], lostColor));
-                       
                                         track.setColor(lostColor);
                                    }
                                 }
@@ -185,12 +187,15 @@ public class Engine {
         int genr = 0;
         long counter;
         Function<Integer, Simulator.Generation> genf;
+        Player(){}
+        
         Player(Function<Integer, Simulator.Generation> genf){
             this.genf = genf;
             start();
         }
 
         public void start(Function<Integer, Simulator.Generation> genf){
+            clearBackground();
             this.genf = genf;
             genr = 0;
             counter = 0;
@@ -202,25 +207,22 @@ public class Engine {
             if (genr<generations){
                 if (counter == 0){
                     addGeneration(genf.apply(genr));
-                    paint();
+                    paintTracks(0);
                     genr++;
                 }
             }
             else{
                 this.stop();
-                paint();
+                paintTracks(0);
             }
 
             counter %= speed;
         }
     };
     
-    private Player player;
+    private Player player = new Player();
     
     public void play(Function<Integer, Simulator.Generation> genf){
-        if (player == null)
-            player = new Player(genf);
-        else
-            player.start(genf);        
+        player.start(genf);        
     }
 }

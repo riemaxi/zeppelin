@@ -1,0 +1,20 @@
+#simulation parameters
+generations: 100
+populations: 10
+A_a: 0.0
+a_A: 0.0
+fAA: 1.0
+fAa: 1.0
+faa: 1.0
+popSize: 50
+initFreq: 0.5
+runs:10
+run: 1
+
+#GUI
+gui.cmd.hint: hint;
+gui.title: Zeppelin Population Genetics
+gui.cmd.sim: sim;
+gui.cmd.set: set <key> <value>;
+gui.cmd.get: get [key];
+gui.cmd.stats: stats;
