@@ -8,6 +8,7 @@ package rmx.ppp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Stack;
 
 /**
  *
@@ -16,13 +17,24 @@ import java.util.List;
 public class Builder implements Parser.Builder{
     private List<Joint> line;
     private List<Joint> umlíst;
+    private Stack<GroupJoint> stack;
     private HashMap<String, Joint> catalog;
     
     public Builder(HashMap<String, Joint> catalog){
         this.catalog = catalog;
     }
     
+    protected GroupJoint getGroupJoint(String token){
+        switch(token){
+            case "(": return new SerialJoint();
+            case "[" : return new ParallelOrJoint();
+            case "{" : return new ParallelAndJoint();
+            default: return new GroupJoint();
+        }
+    }
+    
     public Pipeline build(String source){
+        stack = new Stack<>();
         umlíst = new ArrayList<>();
         line = new ArrayList<>();
         Parser parser = new Parser();
@@ -33,18 +45,26 @@ public class Builder implements Parser.Builder{
                 joint -> umlíst.add(joint) );
     }
     
+    
     @Override
     public void open(String token) {
+        stack.push(getGroupJoint(token));
     }
 
     @Override
     public void close(String token) {
+        if (!stack.isEmpty())
+            stack.pop();
     }
 
     @Override
     public boolean symbol(String name) {
         if (catalog.containsKey(name)){
-            line.add(catalog.get(name));
+            if (stack.isEmpty())
+                line.add(catalog.get(name));
+            else
+                stack.peek().add(catalog.get(name));
+            
             return false;
         }
 

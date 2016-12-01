@@ -79,7 +79,7 @@ public class Main {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        String source = "jointA jointB JointX jointC";
+        String source = " jointA (  [ jointB]    {jointC} )";
         
         new Builder(getCatalog())
                 .build(source)

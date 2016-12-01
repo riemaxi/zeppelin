@@ -16,9 +16,7 @@ public class GroupJoint implements Joint{
     protected final List<Joint> line;
     public GroupJoint(Joint ... joints){
         line = new ArrayList<>();
-        for(int i=0; i<joints.length; i++){
-            line.add(joints[i]);
-        }
+        add(joints);
     }
     
     protected boolean mount(int i, Joint joint){
@@ -31,6 +29,12 @@ public class GroupJoint implements Joint{
 
     protected void success(int i, Joint joint){
         joint.success();
+    }
+    
+    public void add(Joint ... joints){
+        for(int i=0; i<joints.length; i++){
+            line.add(joints[i]);
+        }
     }
     
     @Override
