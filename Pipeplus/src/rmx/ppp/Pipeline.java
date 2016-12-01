@@ -7,6 +7,7 @@ package rmx.ppp;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  *
@@ -17,23 +18,25 @@ public class Pipeline {
     public Pipeline(){
         line = new ArrayList<>();
     }
+
+    public Pipeline(List<Joint> joints, Consumer<Joint> reporter){
+        line = new ArrayList<>();
+        mount(joints, reporter);
+    }
     
-    public List<Joint> mount(Joint ... joints){
-        List<Joint> umlist = new ArrayList<>();
-        for(int i=0; i<joints.length; i++){
-            Joint joint = joints[i];
+    public void mount(List<Joint> joints, Consumer<Joint> reporter){
+        for(int i=0; i<joints.size(); i++){
+            Joint joint = joints.get(i);
             if (joint.mount())
                 line.add(joint);
             else
-                umlist.add(joint);
+                reporter.accept(joint);
         }
-        
-        return umlist;
     }
     
     public void execute(){
         G.state = C.STATE_STARTED;
-        while(G.state != C.STATE_SUCCESS)
+        while(G.state != C.STATE_SUCCESS && line.size()>0)
             for(Joint joint : line){
                 joint.execute();
                 if (G.state == C.STATE_ABORTED){

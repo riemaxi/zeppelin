@@ -14,6 +14,8 @@ public interface C {
     int STATE_STARTED = 0;
     int STATE_ABORTED = -1000;
     
+    int PARAMETER_PAUSE_TIME = 250;
+    
     String PARAMETER_FILE = "parameter.txt";
     String PARAMETER_COMMENT = "#";
     String PARAMETER_DELIMITER = ":";
