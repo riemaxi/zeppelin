@@ -48,7 +48,7 @@ public class Parser {
     }
     
     protected boolean pop(String token, Stack<String> stack, Builder builder){
-        if (!pair.get(token).equals(stack.peek())){
+        if (stack.isEmpty() || !pair.get(token).equals(stack.peek())){
             builder.error(token, P.s("ui.message.error.close_symbol_unmatching"));
             return true;
         }
