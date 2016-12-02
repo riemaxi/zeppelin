@@ -26,9 +26,9 @@ public class Builder implements Parser.Builder{
     
     protected GroupJoint getGroupJoint(String token){
         switch(token){
-            case "(": return new SerialJoint();
-            case "[" : return new ParallelOrJoint();
-            case "{" : return new ParallelAndJoint();
+            case C.PARSER_SERIAL_OPEN : return catalog.containsKey(C.SERIAL_JOINT_ID) ? (GroupJoint)catalog.get(C.SERIAL_JOINT_ID) : new SerialJoint();
+            case C.PARSER_PAR_OR_OPEN : return catalog.containsKey(C.PAR_OR_JOINT_ID) ? (GroupJoint)catalog.get(C.PAR_OR_JOINT_ID) : new ParallelOrJoint();
+            case C.PARSER_PAR_AND_OPEN : return catalog.containsKey(C.PAR_AND_JOINT_ID) ? (GroupJoint)catalog.get(C.PAR_AND_JOINT_ID) : new ParallelAndJoint();
             default: return new GroupJoint();
         }
     }
@@ -54,7 +54,7 @@ public class Builder implements Parser.Builder{
     @Override
     public void close(String token) {
         if (!stack.isEmpty())
-            stack.pop();
+            line.add(stack.pop());
     }
 
     @Override

@@ -12,10 +12,14 @@ package rmx.ppp;
 public class SerialJoint extends GroupJoint{
 
     @Override
+    public boolean done(){
+           return line.get(line.size()-1).done();
+    }
+    
+    @Override
     public void execute() {
-        for(int i=0; i<line.size() && G.state != C.STATE_ABORTED && G.state != C.STATE_SUCCESS ; i++){
-            line.get(i).execute();
-        }
+        while(G.state != C.STATE_SUCCESS && line.size()>0 && !done())
+            line.stream().forEach(joint -> joint.execute() );
     }
     
 }

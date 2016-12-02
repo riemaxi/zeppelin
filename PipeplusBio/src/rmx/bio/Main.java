@@ -20,7 +20,8 @@ public class Main {
         protected boolean workdone;
         @Override
         public boolean mount() {
-             return true;
+            workdone = false;
+            return true;
         }
 
         @Override
@@ -29,6 +30,7 @@ public class Main {
 
         @Override
         public void abort() {
+            workdone = true;
         }
 
         @Override
@@ -59,11 +61,63 @@ public class Main {
     static class JointC extends StandardJoint{
         public void execute() {
             System.out.println("Hello from JointC");
-            G.state = C.STATE_SUCCESS;
             workdone = true;
         }
     }
+
+    static class JointEnd extends StandardJoint{
+        private int duration = 3;
+        public void execute() {
+            workdone = duration-- == 0;
+            if (workdone){
+                G.state = C.STATE_SUCCESS;
+                System.out.println("End ...");
+            }else
+                System.out.println("Still working ...");
+        }
+    }
     
+    static class JointLoop extends StandardJoint{
+        private int duration;
+        private int timeleft;
+        private String name;
+        public JointLoop(String name, int duration){
+            this.name = name;
+            this.duration = duration;
+            this.timeleft = duration;
+        }
+        
+        protected void pause(){
+            try{
+                Thread.sleep(500);
+            }catch(Exception e){
+                
+            }
+        }
+        
+        @Override
+        public void abort(){
+            timeleft = duration;
+            super.abort();
+        }
+        
+        @Override
+        public boolean mount(){
+            timeleft = duration;
+            return super.mount();
+        }
+        
+        @Override
+        public void execute() {
+            while (timeleft>0){
+                System.out.println("Loop " + name + ", time left: " + timeleft);
+                pause();
+                timeleft--;
+            }
+            workdone = true;
+        }
+    }
+
     
     static HashMap<String, Joint> getCatalog(){
         HashMap<String, Joint> catalog = new HashMap<>();
@@ -71,6 +125,9 @@ public class Main {
         catalog.put("jointA", new JointA());
         catalog.put("jointB", new JointB());
         catalog.put("jointC", new JointC());
+        catalog.put("loopA", new JointLoop("A", 5));
+        catalog.put("loopB", new JointLoop("B", 8));
+        catalog.put("jointEnd", new JointEnd());        
         
         return catalog;
     }
@@ -79,7 +136,10 @@ public class Main {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        String source = " jointA (  [ jointB]    {jointC} )";
+        //String source = " jointA (  [ jointB]    {jointC} )";
+        //String source = "jointA jointB jointC";
+        //String source = "(jointB jointC)";
+        String source = "jointA [loopA loopB] <this ### is the end of\n --- this pipeline\n......>\n jointEnd";
         
         new Builder(getCatalog())
                 .build(source)

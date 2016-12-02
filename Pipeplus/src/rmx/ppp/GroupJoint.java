@@ -57,7 +57,7 @@ public class GroupJoint implements Joint{
 
     @Override
     public void execute() {
-        line.stream().forEach(joint -> joint.execute() );
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override

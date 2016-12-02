@@ -14,6 +14,15 @@ class Process extends Thread{
         this.joint = joint;
     }
     
+    public void abort(){
+        try{
+            joint.abort();
+        }catch(Exception e){
+            
+        }
+    }
+    
+    @Override
     public void run(){
         joint.execute();
     }
@@ -39,20 +48,32 @@ public class ParallelJoint extends GroupJoint{
                
     }
     
+    @Override
     protected boolean mount(int i, Joint joint){
-        boolean mounted = joint.mount();
-        if (mounted)
-            processes.add(new Process(joint));
-        
-        return mounted;
+        if (!joint.mount())
+            return false;
+
+        processes.add(new Process(joint));
+        return true;
+    }
+    
+    @Override
+    public void abort(){
+        processes.stream().forEach(p -> p.abort());
+        processes.clear();
     }
     
     @Override 
     public void execute(){
-        processes.stream().forEach(p -> p.start());
-        
+        if (processes.isEmpty())
+            mount();
+
+        processes.stream().forEach(p -> p.start() );
+
         while(!done()){
             pause();
         }
+
+        abort();
     }
 }
