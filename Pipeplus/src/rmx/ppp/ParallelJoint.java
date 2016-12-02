@@ -67,7 +67,7 @@ public class ParallelJoint extends GroupJoint{
     public void execute(){
         if (processes.isEmpty())
             mount();
-
+ 
         processes.stream().forEach(p -> p.start() );
 
         while(!done()){

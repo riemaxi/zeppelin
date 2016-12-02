@@ -68,12 +68,14 @@ public class Main {
     static class JointEnd extends StandardJoint{
         private int duration = 3;
         public void execute() {
-            workdone = duration-- == 0;
+            workdone = duration == 0;
             if (workdone){
                 G.state = C.STATE_SUCCESS;
                 System.out.println("End ...");
             }else
-                System.out.println("Still working ...");
+                System.out.println("Still working ..." + duration);
+            
+            duration--;
         }
     }
     
@@ -109,7 +111,7 @@ public class Main {
         
         @Override
         public void execute() {
-            while (timeleft>0){
+            while (!workdone && timeleft>0){
                 System.out.println("Loop " + name + ", time left: " + timeleft);
                 pause();
                 timeleft--;
