@@ -5,6 +5,7 @@
  */
 package rmx.ppp;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Scanner;
@@ -14,7 +15,9 @@ class Transition extends HashMap<String, String>{
     private String stateSymbolFormat;
     private String errorState;
     private String initState;
-    private String state;    
+    private String state;
+    public String message;
+    
     public Transition(String initState, String errorState, String stateSymbolFormat){
         this.errorState = errorState;
         this.initState = initState;
@@ -26,9 +29,17 @@ class Transition extends HashMap<String, String>{
         put(String.format(stateSymbolFormat, state, tokentype), nextState);
     }
     
-    public String step(String tokenType){
+    public void set(String state, String message){
+        this.message = message;
+        this.state = state;
+    }
+    
+    public String step(String tokenType, String message){
         String key = String.format(state, tokenType);
-        return containsKey(key) ? state = get(key) : errorState;
+        state = containsKey(key) ? get(key) : errorState;
+        if (state.equals(errorState))
+            this.message = message;
+        return state;
     }
     
     public void init(){
@@ -57,12 +68,24 @@ public class XParser {
     public XParser(){
         transition = new Transition(C.PARSER_STATE_START,C.PARSER_STATE_ERROR , "%s_%s");
         transition.add(C.PARSER_STATE_START,C.PARSER_SYMBOL, C.PARSER_STATE_START);
-        transition.put(C.PARSER_STATE_START, C.PARSER_STATE_BLOCK_PAR_AND);
-        transition.put(C.PARSER_STATE_START, C.PARSER_STATE_BLOCK_PAR_OR);
-        transition.put(C.PARSER_STATE_START, C.PARSER_STATE_BLOCK_SERIAL);
-        transition.put(C.PARSER_STATE_BLOCK_SERIAL, C.PARSER_STATE_START);
-        transition.put(C.PARSER_STATE_BLOCK_PAR_AND, C.PARSER_STATE_START);
-        transition.put(C.PARSER_STATE_BLOCK_PAR_OR, C.PARSER_STATE_START);
+        transition.add(C.PARSER_STATE_START,C.PARSER_PAR_AND_OPEN,  C.PARSER_STATE_BLOCK_PAR_AND);
+        transition.add(C.PARSER_STATE_START,C.PARSER_PAR_OR_OPEN,  C.PARSER_STATE_BLOCK_PAR_OR);        
+        transition.add(C.PARSER_STATE_START,C.PARSER_SERIAL_OPEN,  C.PARSER_STATE_BLOCK_SERIAL);
+        
+        //State: Block par and
+        transition.add(C.PARSER_STATE_BLOCK_PAR_AND,C.PARSER_PAR_AND_OPEN,  C.PARSER_STATE_BLOCK_PAR_AND);
+        transition.add(C.PARSER_STATE_BLOCK_PAR_AND,C.PARSER_SYMBOL,  C.PARSER_STATE_BLOCK_PAR_AND);
+        transition.add(C.PARSER_STATE_BLOCK_PAR_AND,C.PARSER_PAR_AND_CLOSE,  C.PARSER_STATE_START);
+        
+        //State: Block par or
+        transition.add(C.PARSER_STATE_BLOCK_PAR_OR,C.PARSER_PAR_OR_OPEN,  C.PARSER_STATE_BLOCK_PAR_OR);
+        transition.add(C.PARSER_STATE_BLOCK_PAR_OR,C.PARSER_SYMBOL,  C.PARSER_STATE_BLOCK_PAR_OR);
+        transition.add(C.PARSER_STATE_BLOCK_PAR_OR,C.PARSER_PAR_OR_CLOSE,  C.PARSER_STATE_START);
+        
+        //State: Block serial
+        transition.add(C.PARSER_STATE_BLOCK_SERIAL,C.PARSER_SERIAL_OPEN,  C.PARSER_STATE_BLOCK_SERIAL);
+        transition.add(C.PARSER_STATE_BLOCK_SERIAL,C.PARSER_SYMBOL, C.PARSER_STATE_BLOCK_SERIAL);
+        transition.add(C.PARSER_STATE_BLOCK_SERIAL,C.PARSER_SERIAL_CLOSE,  C.PARSER_STATE_START);
     }
     
     protected String nextToken(StringBuffer token, InputStreamReader reader){
@@ -90,33 +113,74 @@ public class XParser {
         }
     }
     
-    
     protected void open(String token, Builder builder){
+        transition.step(token, C.PARSER_ERROR_UNEXPECTED);
         
-        level++;
+        if (transition.ok()){
+            level++;            
+            builder.open(token);
+        }
     }
 
     protected void close(String token, Builder builder){
+        if (level==0){
+            transition.set(C.PARSER_STATE_ERROR, C.PARSER_ERROR_BLOCK_NOT_CLOSED);
+        }
         
-        level--;
+        transition.step(token, C.PARSER_ERROR_UNEXPECTED);
+        if (transition.ok()){
+            level--;
+            builder.close(token);
+        }
     }
     
     protected void skipComment(InputStreamReader reader){
+        try{
+            int ch = reader.read();
+            char commentclose = C.PARSER_COMMENT_CLOSE.charAt(0);
+            while(ch != -1 && ch != commentclose)
+                ch = reader.read();
+            
+            if (ch == -1)
+                transition.set(C.PARSER_STATE_ERROR, C.PARSER_ERROR_COMMENT_NOT_CLOSED);
+        }catch(Exception e){
+            transition.set(C.PARSER_STATE_ERROR, C.PARSER_ERROR_UKNOWN);
+        }
     }
     
     protected void symbol(String token, Builder builder){
+        transition.step(C.PARSER_SYMBOL, C.PARSER_ERROR_UNEXPECTED);
+        if (transition.ok())
+            if (builder.symbol(token))
+                transition.set(C.PARSER_STATE_ERROR, C.PARSER_ERROR_SYMBOL_NOT_FOUND);
     }
     
-    protected void error(String token, Builder builder){
-        builder.error(token, P.s("ui.message.error.unmatched_open_symbols", "Unmatched open symbols"));
+    protected void error(String token, String message, String defMessage, Builder builder){
+        builder.error(token, P.s(message, defMessage));
+    }
+    
+    protected void checkError(String token, Builder builder){
+        if (!transition.ok())
+            error(token, transition.message, transition.message, builder);
+        else
+            if (level > 0)
+                error("","ui.message.error.block_open","Block open",builder);
+    }
+    
+    public void parse(String source, Builder builder){
+        try(InputStreamReader reader = new InputStreamReader(new ByteArrayInputStream(source.getBytes()))){
+            parse(reader, builder);
+        }catch(Exception e){
+        }
     }
     
     public void parse(InputStreamReader reader, Builder builder){
+        String nxtoken;
         transition.init();
         StringBuffer token = new StringBuffer();
         level = 0;
-        for(    String nxtoken = nextToken(token, reader); 
-                transition.ok() && token != null; 
+         for(   nxtoken = nextToken(token, reader); 
+                nxtoken != null && transition.ok(); 
                 nxtoken = nextToken(token, reader)){
             
                 switch(nxtoken){
@@ -130,9 +194,8 @@ public class XParser {
                     default : symbol(nxtoken, builder);
                 }
         }
-        
-        if (level > 0)
-            error("",builder);
-    }
+         
+        checkError(nxtoken, builder);
+     }
     
 }

@@ -15,6 +15,7 @@ import rmx.ppp.Builder;
 import rmx.ppp.C;
 import rmx.ppp.G;
 import rmx.ppp.Joint;
+import rmx.ppp.XBuilder;
 import rmx.ppp.XParser;
 
 /**
@@ -156,27 +157,8 @@ public class Main {
                 .build(source)
                 .execute();*/
         
-
-        XParser.Builder builder = new XParser.Builder() {
-
-            @Override
-            public void open(String token) {
-            }
-
-            @Override
-            public void close(String token) {
-            }
-
-            @Override
-            public boolean symbol(String name) {
-                return false;
-            }
-
-            @Override
-            public void error(String token, String message) {
-            }
-        };
-        
-        new XParser().parse(new InputStreamReader(new ByteArrayInputStream(source.getBytes())) , builder);
+        new XBuilder(getCatalog())
+                .build(source)
+                .execute();
     }
 }

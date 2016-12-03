@@ -43,4 +43,10 @@ public interface C {
     String SERIAL_JOINT_ID = "rmx.pipeplus.serialjoint";
     String PAR_OR_JOINT_ID = "rmx.pipeplus.par_or_joint";
     String PAR_AND_JOINT_ID = "rmx.pipeplus.par_and_joint";
+    
+    String PARSER_ERROR_UNEXPECTED = "ui.message.error.token_unexptected";
+    String PARSER_ERROR_BLOCK_NOT_CLOSED = "ui.message.error.block_not_closed";
+    String PARSER_ERROR_COMMENT_NOT_CLOSED = "ui.message.error.comment_not_closed";
+    String PARSER_ERROR_UKNOWN = "ui.message.error.unknown_error";
+    String PARSER_ERROR_SYMBOL_NOT_FOUND = "ui.message.error.symbol_not_found";
 }
