@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Stack;
+import javax.print.attribute.HashAttributeSet;
 
 /**
  *
@@ -20,8 +21,16 @@ public class Builder implements Parser.Builder{
     private Stack<GroupJoint> stack;
     private HashMap<String, Joint> catalog;
     
+    public Builder(){
+        catalog = createCatalog();
+    }
+    
     public Builder(HashMap<String, Joint> catalog){
         this.catalog = catalog;
+    }
+    
+    protected HashMap<String, Joint> createCatalog(){
+        throw new UnsupportedOperationException();
     }
     
     protected GroupJoint getGroupJoint(String token){
@@ -34,15 +43,17 @@ public class Builder implements Parser.Builder{
     }
     
     public Pipeline build(String source){
+        return build(source, new Pipeline());
+    }
+
+    public Pipeline build(String source, Pipeline pipeline){
         stack = new Stack<>();
         umlíst = new ArrayList<>();
         line = new ArrayList<>();
         Parser parser = new Parser();
         parser.load(source, this);
         
-        return new Pipeline(
-                line,
-                joint -> umlíst.add(joint) );
+        return pipeline.mount(line, joint -> umlíst.add(joint));
     }
     
     

@@ -28,6 +28,14 @@ public interface C {
     String PARSER_SERIAL_CLOSE= ")";
     String PARSER_COMMENT_OPEN = "<";
     String PARSER_COMMENT_CLOSE = ">";
+    String PARSER_SYMBOL = "SYMBOL";
+    String PARSER_BLOCK_CHARS = "{}()[]<>";
+    
+    String PARSER_STATE_ERROR = "0";
+    String PARSER_STATE_START = "1";
+    String PARSER_STATE_BLOCK_PAR_AND = "2";
+    String PARSER_STATE_BLOCK_PAR_OR = "3";
+    String PARSER_STATE_BLOCK_SERIAL = "4";
     
     String PARSER_CONTENT_PATTERN_COMMENT = "[-#\\.]+";    
     String PARSER_CONTENT_PATTERN =  "[a-zA-Z_][a-zA-Z0-9]+|[{}\\[\\]\\(\\)<>]|" + C.PARSER_CONTENT_PATTERN_COMMENT;

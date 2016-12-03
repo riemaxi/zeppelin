@@ -24,7 +24,7 @@ public class Pipeline {
         mount(joints, reporter);
     }
     
-    public void mount(List<Joint> joints, Consumer<Joint> reporter){
+    public Pipeline mount(List<Joint> joints, Consumer<Joint> reporter){
         for(int i=0; i<joints.size(); i++){
             Joint joint = joints.get(i);
             if (joint.mount())
@@ -32,11 +32,16 @@ public class Pipeline {
             else
                 reporter.accept(joint);
         }
+        return this;
     }
     
     public void execute(){
+        execute(Integer.MAX_VALUE);
+    }    
+    
+    public void execute(int times){
         G.state = C.STATE_STARTED;
-        while(G.state != C.STATE_SUCCESS && line.size()>0)
+        while(G.state != C.STATE_SUCCESS && line.size()>0 && times-->0)
             for(Joint joint : line){
                 joint.execute();
                 if (G.state == C.STATE_ABORTED){

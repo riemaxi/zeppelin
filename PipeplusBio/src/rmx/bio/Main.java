@@ -5,11 +5,17 @@
  */
 package rmx.bio;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.util.HashMap;
+import rmx.bio.util.AnnotationBuilder;
+import rmx.bio.util.DummyJoint;
 import rmx.ppp.Builder;
 import rmx.ppp.C;
 import rmx.ppp.G;
 import rmx.ppp.Joint;
+import rmx.ppp.XParser;
 
 /**
  *
@@ -129,6 +135,7 @@ public class Main {
         catalog.put("jointC", new JointC());
         catalog.put("loopA", new JointLoop("A", 5));
         catalog.put("loopB", new JointLoop("B", 8));
+        catalog.put("loop", new DummyJoint());
         catalog.put("jointEnd", new JointEnd());        
         
         return catalog;
@@ -141,10 +148,35 @@ public class Main {
         //String source = " jointA (  [ jointB]    {jointC} )";
         //String source = "jointA jointB jointC";
         //String source = "(jointB jointC)";
-        String source = "jointA [loopA loopB] <this ### is the end of\n --- this pipeline\n......>\n jointEnd";
+        String source = "jointA [loop loopA loopB] <this ### is the end of\n --- this pipeline\n......>\n jointEnd";
         
-        new Builder(getCatalog())
+        //new AnnotationBuilder().build(source, l -> System.out.println(l + "annotation for " + l.replace("@","").replace(":","")  + " \nand more"),"loopA", "loopB","jointA","loop","jointEnd");
+        
+        /*new Builder(getCatalog())
                 .build(source)
-                .execute();
+                .execute();*/
+        
+
+        XParser.Builder builder = new XParser.Builder() {
+
+            @Override
+            public void open(String token) {
+            }
+
+            @Override
+            public void close(String token) {
+            }
+
+            @Override
+            public boolean symbol(String name) {
+                return false;
+            }
+
+            @Override
+            public void error(String token, String message) {
+            }
+        };
+        
+        new XParser().parse(new InputStreamReader(new ByteArrayInputStream(source.getBytes())) , builder);
     }
 }
