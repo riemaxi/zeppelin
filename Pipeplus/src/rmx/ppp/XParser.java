@@ -15,7 +15,7 @@ class Transition extends HashMap<String, String>{
     private String stateSymbolFormat;
     private String errorState;
     private String initState;
-    private String state;
+    public String state;
     public String message;
     
     public Transition(String initState, String errorState, String stateSymbolFormat){
@@ -35,7 +35,7 @@ class Transition extends HashMap<String, String>{
     }
     
     public String step(String tokenType, String message){
-        String key = String.format(state, tokenType);
+        String key = String.format(stateSymbolFormat , state, tokenType);
         state = containsKey(key) ? get(key) : errorState;
         if (state.equals(errorState))
             this.message = message;
@@ -88,7 +88,14 @@ public class XParser {
         transition.add(C.PARSER_STATE_BLOCK_SERIAL,C.PARSER_SERIAL_CLOSE,  C.PARSER_STATE_START);
     }
     
+    private int leftBehind;
     protected String nextToken(StringBuffer token, InputStreamReader reader){
+        if (leftBehind != -10){
+            String next = Character.toString((char)leftBehind);
+            leftBehind = -10;
+            return next;
+        }
+        
         try{
             token.setLength(0);
             int ch = reader.read();
@@ -96,16 +103,20 @@ public class XParser {
                 ch = (char)reader.read();
             }
             
-            while(ch != -1 && ch != '\n' && ch != '\t' && ch != ' '){
-                
-                if (C.PARSER_BLOCK_CHARS.indexOf(ch)>=0)
-                    return Character.toString((char)ch);
-                
+            while(ch != -1 && ch != '\n' && ch != '\t' && ch != ' ' && C.PARSER_BLOCK_CHARS.indexOf(ch)==-1){
                 token.append((char)ch);
                 ch = reader.read();
             }
             
-            return ch == -1 ? null : token.toString();
+            if (C.PARSER_BLOCK_CHARS.indexOf(ch)>=0){
+                if (token.length()>0){
+                    leftBehind = ch;
+                    return token.toString();
+                }else
+                    return Character.toString((char)ch);
+            }
+            
+            return ch == -1 ? (token.length()>0 ? token.toString() : null) : token.toString();
             
         }catch(Exception e){
             System.out.println(e);
@@ -175,6 +186,7 @@ public class XParser {
     }
     
     public void parse(InputStreamReader reader, Builder builder){
+        leftBehind = -10;
         String nxtoken;
         transition.init();
         StringBuffer token = new StringBuffer();
@@ -182,7 +194,7 @@ public class XParser {
          for(   nxtoken = nextToken(token, reader); 
                 nxtoken != null && transition.ok(); 
                 nxtoken = nextToken(token, reader)){
-            
+             
                 switch(nxtoken){
                     case C.PARSER_PAR_OR_OPEN :;
                     case C.PARSER_PAR_AND_OPEN :;
@@ -193,6 +205,7 @@ public class XParser {
                     case C.PARSER_COMMENT_OPEN : skipComment(reader); break;
                     default : symbol(nxtoken, builder);
                 }
+                
         }
          
         checkError(nxtoken, builder);

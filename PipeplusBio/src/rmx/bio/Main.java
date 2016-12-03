@@ -150,6 +150,7 @@ public class Main {
         //String source = "jointA jointB jointC";
         //String source = "(jointB jointC)";
         String source = "jointA [loop loopA loopB] <this ### is the end of\n --- this pipeline\n......>\n jointEnd";
+        //String source = "jointA [loop loopA loopB] jointEnd";
         
         //new AnnotationBuilder().build(source, l -> System.out.println(l + "annotation for " + l.replace("@","").replace(":","")  + " \nand more"),"loopA", "loopB","jointA","loop","jointEnd");
         
