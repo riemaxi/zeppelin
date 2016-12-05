@@ -5,7 +5,7 @@
  */
 package rmx.bio.util;
 
-import rmx.ppp.Joint;
+import rmx.ppp.protocol.*;
 
 /**
  *
@@ -25,7 +25,8 @@ public class DummyJoint implements Joint {
     }
 
     @Override
-    public void execute() {
+    public boolean execute() {
+        return false;
     }
 
     @Override

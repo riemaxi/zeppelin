@@ -12,11 +12,7 @@ import java.util.HashMap;
 import rmx.bio.util.AnnotationBuilder;
 import rmx.bio.util.DummyJoint;
 import rmx.ppp.Builder;
-import rmx.ppp.C;
-import rmx.ppp.G;
-import rmx.ppp.Joint;
-import rmx.ppp.XBuilder;
-import rmx.ppp.XParser;
+import rmx.ppp.protocol.*;
 
 /**
  *
@@ -32,7 +28,8 @@ public class Main {
         }
 
         @Override
-        public void execute() {
+        public boolean execute() {
+            return false;
         }
 
         @Override
@@ -52,37 +49,40 @@ public class Main {
     }
     
     static class JointA extends StandardJoint{
-        public void execute() {
+        public boolean execute() {
             System.out.println("Hello from JointA");
             workdone = true;
+            return false;
         }
     }
 
     static class JointB extends StandardJoint{
-        public void execute() {
+        public boolean execute() {
             System.out.println("Hello from JointB");
             workdone = true;
+            return false;
         }
     }
     
     static class JointC extends StandardJoint{
-        public void execute() {
+        public boolean execute() {
             System.out.println("Hello from JointC");
             workdone = true;
+            return false;
         }
     }
 
     static class JointEnd extends StandardJoint{
         private int duration = 3;
-        public void execute() {
+        public boolean execute() {
             workdone = duration == 0;
             if (workdone){
-                G.state = C.STATE_SUCCESS;
                 System.out.println("End ...");
             }else
                 System.out.println("Still working ..." + duration);
-            
+
             duration--;
+            return workdone;
         }
     }
     
@@ -117,13 +117,14 @@ public class Main {
         }
         
         @Override
-        public void execute() {
+        public boolean execute() {
             while (!workdone && timeleft>0){
                 System.out.println("Loop " + name + ", time left: " + timeleft);
                 pause();
                 timeleft--;
             }
             workdone = true;
+            return false;
         }
     }
 
@@ -149,16 +150,12 @@ public class Main {
         //String source = " jointA (  [ jointB]    {jointC} )";
         //String source = "jointA jointB jointC";
         //String source = "(jointB jointC)";
-        String source = "jointA [loop loopA loopB] <this ### is the end of\n --- this pipeline\n......>\n jointEnd";
-        //String source = "jointA [loop loopA loopB] jointEnd";
+        //String source = "jointA [loop loopA loopB] <this ### is the end of\n --- this pipeline\n......>\n jointEnd";
+        String source = "jointA [loop loopA loopB] \n #the end \n  jointEnd";
         
         //new AnnotationBuilder().build(source, l -> System.out.println(l + "annotation for " + l.replace("@","").replace(":","")  + " \nand more"),"loopA", "loopB","jointA","loop","jointEnd");
         
-        /*new Builder(getCatalog())
-                .build(source)
-                .execute();*/
-        
-        new XBuilder(getCatalog())
+        new Builder(getCatalog())
                 .build(source)
                 .execute();
     }

@@ -8,6 +8,7 @@ package rmx.ppp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import rmx.ppp.protocol.*;
 
 /**
  *
@@ -35,22 +36,27 @@ public class Pipeline {
         return this;
     }
     
+    protected boolean done(){
+        return line.get(line.size()-1).done();
+    }
+    
     public void execute(){
         execute(Integer.MAX_VALUE);
     }    
     
     public void execute(int times){
-        G.state = C.STATE_STARTED;
-        while(G.state != C.STATE_SUCCESS && line.size()>0 && times-->0)
-            for(Joint joint : line){
-                joint.execute();
-                if (G.state == C.STATE_ABORTED){
-                    abort();
-                    return;                    
-                }
+        boolean aborted = false;        
+        while(!aborted && times-->0 && line.size()>0 && !done()){
+            for(Joint joint:line){
+                if (aborted = joint.execute())
+                    break;
             }
+        }
         
-        success();
+        if (aborted)
+            abort();
+        else
+            success();
     }
     
     protected void abort(){

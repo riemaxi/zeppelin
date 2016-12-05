@@ -7,7 +7,7 @@ package rmx.bio.util;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
-import rmx.ppp.Joint;
+import rmx.ppp.protocol.*;
 
 /**
  *
@@ -35,8 +35,9 @@ public class AnnotationJoint implements Joint{
     }
 
     @Override
-    public void execute() {
+    public boolean execute() {
         reporter.accept(String.format("%s%s%s",prefix, label, suffix));
+        return false;
     }
 
     @Override

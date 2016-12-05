@@ -8,7 +8,7 @@ package rmx.bio.util;
 import java.util.HashMap;
 import java.util.function.Consumer;
 import rmx.ppp.Builder;
-import rmx.ppp.Joint;
+import rmx.ppp.protocol.*;
 
 /**
  *

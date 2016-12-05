@@ -9,13 +9,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Stack;
-import javax.print.attribute.HashAttributeSet;
+import rmx.ppp.protocol.*;
 
 /**
  *
  * @author Samuel
  */
-public class Builder implements Parser.Builder{
+public class Builder implements Parser.Builder {
     private List<Joint> line;
     private List<Joint> umlíst;
     private Stack<GroupJoint> stack;
@@ -32,7 +32,7 @@ public class Builder implements Parser.Builder{
     protected HashMap<String, Joint> createCatalog(){
         throw new UnsupportedOperationException();
     }
-    
+
     protected GroupJoint getGroupJoint(String token){
         switch(token){
             case C.PARSER_SERIAL_OPEN : return catalog.containsKey(C.SERIAL_JOINT_ID) ? (GroupJoint)catalog.get(C.SERIAL_JOINT_ID) : new SerialJoint();
@@ -41,7 +41,7 @@ public class Builder implements Parser.Builder{
             default: return new GroupJoint();
         }
     }
-    
+
     public Pipeline build(String source){
         return build(source, new Pipeline());
     }
@@ -51,11 +51,10 @@ public class Builder implements Parser.Builder{
         umlíst = new ArrayList<>();
         line = new ArrayList<>();
         Parser parser = new Parser();
-        parser.load(source, this);
+        parser.parse(source, this);
         
         return pipeline.mount(line, joint -> umlíst.add(joint));
     }
-    
     
     @Override
     public void open(String token) {
@@ -64,7 +63,7 @@ public class Builder implements Parser.Builder{
 
     @Override
     public void close(String token) {
-        if (!stack.isEmpty())
+      if (!stack.isEmpty())
             line.add(stack.pop());
     }
 
@@ -79,7 +78,6 @@ public class Builder implements Parser.Builder{
             return false;
         }
 
-        error(name,P.s("ui.message.error.symbol_not_found","Symbol not found"));
         return true;
     }
 

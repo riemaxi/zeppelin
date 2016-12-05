@@ -99,15 +99,18 @@ public class XParser {
         try{
             token.setLength(0);
             int ch = reader.read();
+            //Skip spaces
             while(ch == '\n' || ch == '\t' || ch == ' '){
                 ch = (char)reader.read();
             }
             
+            //Read next token
             while(ch != -1 && ch != '\n' && ch != '\t' && ch != ' ' && C.PARSER_BLOCK_CHARS.indexOf(ch)==-1){
                 token.append((char)ch);
                 ch = reader.read();
             }
             
+            //Check if block symbol
             if (C.PARSER_BLOCK_CHARS.indexOf(ch)>=0){
                 if (token.length()>0){
                     leftBehind = ch;

@@ -119,11 +119,11 @@ public class P{
         p = new Parameter();
     }
     
-    public int i(String key){
+    public static int i(String key){
         return i(key,0);
     }
 
-    public int i(String key, int def){
+    public static int i(String key, int def){
         return p.i(key, def);
     }
 
