@@ -1,0 +1,28 @@
+class Greeter{
+    hello(){
+        return "hello you";
+    }
+
+    hello(name){
+        return "hello you " + name;
+    }
+
+    add(a,b){
+        return a + b;
+    }
+
+};
+
+greeter = new Greeter();
+
+hello(){
+    return greeter.hello();
+};
+
+hello(name){
+    return greeter.hello(name);
+};
+
+add(a,b){
+    return greeter.add(a,b);
+}

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jnlp spec="1.0" xmlns:jfx="http://javafx.com" href="Blimp.jnlp">
+  <information>
+    <title>Blimp</title>
+    <vendor>Samuel</vendor>
+    <description>null</description>
+    <offline-allowed/>
+  </information>
+  <resources>
+    <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
+    <jar href="Blimp.jar" size="50102" download="eager" />
+    <jar href="lib\BlimpProtocol.jar" size="8305" download="eager" />
+    <jar href="lib\bsh-2.0b4.jar" size="281694" download="eager" />
+  </resources>
+  <applet-desc  width="800" height="600" main-class="com.javafx.main.NoJavaFXFallback"  name="Blimp" >
+    <param name="requiredFXVersion" value="8.0+"/>
+  </applet-desc>
+  <jfx:javafx-desc  width="800" height="600" main-class="rmx.client.blimp.Main"  name="Blimp" />
+  <update check="always"/>
+</jnlp>

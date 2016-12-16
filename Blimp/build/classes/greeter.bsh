@@ -1,0 +1,20 @@
+class Greeter{
+    public String hello(){
+        return "hello you";
+    }
+
+    public String hello(name){
+        return "hello you " + name;
+    }
+
+};
+
+greeter = new Greeter();
+
+hello(){
+    return greeter.hello();
+};
+
+hello(name){
+    return greeter.hello(name);
+}

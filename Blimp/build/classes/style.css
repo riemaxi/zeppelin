@@ -1,0 +1,7 @@
+#command{
+    -fx-font-size: 11pt;
+    -fx-font-family: "Verdana";
+    -fx-base: black;
+    -fx-background: black;
+    -fx-text-fill: white;
+}
