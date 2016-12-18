@@ -1,0 +1,6 @@
+rmx.blimp.handler.ux.class: rmx.blimp.service.handler.UXRequestHandler
+rmx.blimp.handler.ux.path: /ux/
+rmx.blimp.handler.ux.port: 8002
+rmx.blimp.handler.command.class: rmx.blimp.service.handler.CommandRequestHandler
+rmx.blimp.handler.command.path: /command/
+rmx.blimp.handler.command.port: 8001
