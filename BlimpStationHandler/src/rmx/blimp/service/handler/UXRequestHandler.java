@@ -17,9 +17,10 @@ import rmx.Parameter;
  */
 public class UXRequestHandler extends StandardHandler{
     private String scripts;
+    private String type;
     
     private String getContent(String name){
-        try(BufferedReader reader = new BufferedReader(new FileReader(scripts + name))){
+        try(BufferedReader reader = new BufferedReader(new FileReader(scripts + name + type))){
             StringBuffer content = new StringBuffer();
             reader.lines().forEach(l -> content.append(String.format("%s%n", l)));
             return content.toString();
@@ -31,13 +32,14 @@ public class UXRequestHandler extends StandardHandler{
     @Override
     public void handle(HttpExchange he) throws IOException {
         String script = getParams(he).get("script");
-        send(he, "hello from UX ... " + getContent(script + ".bsh") );
+        send(he, getContent(script) );
     }
 
     @Override
     public void init(Parameter p) {
         this.path = p.s("rmx.blimp.handler.ux.path");
         this.scripts = p.s("rmx.blimp.handler.ux.script");
+        this.type = p.s("rmx.blimp.handler.ux.scripttype");
     }
     
 }
