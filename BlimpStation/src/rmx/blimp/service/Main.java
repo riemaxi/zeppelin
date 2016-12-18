@@ -106,6 +106,5 @@ public class Main{
         start();
         
         prompt(name -> stop(name));
-        
     }
 }

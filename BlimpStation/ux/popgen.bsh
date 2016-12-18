@@ -1,0 +1,28 @@
+class PopGen{
+    hello(){
+        return "hello you ... from PopGen ...";
+    }
+
+    hello(name){
+        return "hello you " + name " .. from PopGen ...";
+    }
+
+    add(a,b){
+        return a + b;
+    }
+
+};
+
+popgen = new PopGen();
+
+hello(){
+    return popgen.hello();
+};
+
+hello(name){
+    return popgen.hello(name);
+};
+
+add(a,b){
+    return popgen.add(a,b);
+}
