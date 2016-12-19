@@ -4,7 +4,7 @@ class Greeter{
     }
 
     hello(name){
-        return "hello you " + name " ... on behalf of BlimpStation/ux";
+        return "hello you " + name + " ... on behalf of BlimpStation/ux";
     }
 
     add(a,b){

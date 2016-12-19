@@ -21,9 +21,7 @@ public class UXRequestHandler extends StandardHandler{
     
     private String getContent(String name){
         try(BufferedReader reader = new BufferedReader(new FileReader(scripts + name + type))){
-            StringBuffer content = new StringBuffer();
-            reader.lines().forEach(l -> content.append(String.format("%s%n", l)));
-            return content.toString();
+            return reader.lines().reduce("", (sum,s) -> sum.isEmpty() ? s : String.format("%s%n%s", sum, s));
         }catch(Exception e){
             return e.toString();
         }
