@@ -6,6 +6,12 @@
 package rmx.client.blimp;
 
 import bsh.Interpreter;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.InputStreamReader;
+import java.io.StringReader;
+import java.net.URL;
+import java.util.function.Consumer;
 
 /**
  *
@@ -25,6 +31,28 @@ public class CommandInterpreter {
             return e;
         }
     }
+
+    public Object load(URL url){
+        try{
+            return in7er.eval(new InputStreamReader(url.openStream()) );
+        }catch(Exception e){
+            System.out.println(e);
+            return e;
+        }
+    }
+    
+    
+    public Object load(String path, Consumer<String> closure){
+        Object result = null;
+        try{
+            result = in7er.source(path);
+        }catch(Exception e){
+        }
+        
+        closure.accept(path);
+        return result;
+    }
+    
     
     public String execute(String command){
         try{

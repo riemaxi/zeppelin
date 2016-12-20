@@ -1,1 +1,1 @@
-script: src/shell.bsh
+script: http://localhost:8002/ux/script=shell
