@@ -7,7 +7,9 @@ package rmx;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Scanner;
+import java.util.function.Consumer;
 
 /**
  *
@@ -96,6 +98,12 @@ public class Parameter extends HashMap<String, String> {
         }
     }
     
+    public void list(String prefix, Consumer<String> consumer){
+        keySet().stream().filter((key) -> (key.startsWith(prefix))).forEach((key) -> {
+            consumer.accept(key.replace(prefix,"") + " " + get(key));
+        });
+    }
+    
     public String getValues(String prefix){
         StringBuilder str = new StringBuilder();
         keySet().stream().filter((key) -> (key.startsWith(prefix))).forEach((key) -> {
@@ -104,7 +112,7 @@ public class Parameter extends HashMap<String, String> {
         
         return str.toString();
     }
-
+    
     @Override
     public String toString(){
         StringBuilder str = new StringBuilder();

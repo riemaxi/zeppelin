@@ -16,8 +16,8 @@ import io.netty.handler.codec.http.HttpServerCodec;
  *
  * @author Samuel
  */
-public class UXServer extends Server{
-    class DefaultChannelInitializer extends ChannelInitializer<SocketChannel>{
+public class UXService extends Service{
+    private class DefaultChannelInitializer extends ChannelInitializer<SocketChannel>{
         private final String www;
         
         public DefaultChannelInitializer(String www){
@@ -39,7 +39,7 @@ public class UXServer extends Server{
     
     protected final int maxContentSize;
     protected final String www;
-    public UXServer(int port, int maxContentSize, String www){
+    public UXService(int port, int maxContentSize, String www){
         super(port);
         this.maxContentSize = maxContentSize;
         this.www = www;

@@ -5,14 +5,15 @@
  */
 package rmx.blimp.service;
 
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.socket.SocketChannel;
+
 /**
  *
  * @author Samuel
  */
-public class StreamServer extends Server{
-    protected final String websocketEnd;
-    public StreamServer(int port, String websocketEnd){
-        super(port);
-        this.websocketEnd = websocketEnd;
+public class AdminService extends UXService{
+    public AdminService(int port, int maxContentSize, String www){
+        super(port,maxContentSize, www);
     }
 }

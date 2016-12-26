@@ -16,14 +16,14 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
  *
  * @author Samuel
  */
-public class Server {
+public class Service {
     protected final int port;
     protected EventLoopGroup boss;
     Channel channel;
     protected EventLoopGroup worker;
     
     
-    public Server(int port){
+    public Service(int port){
         this.port = port;
     }
     

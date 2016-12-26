@@ -13,6 +13,7 @@ package rmx;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Scanner;
+import java.util.function.Consumer;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -61,6 +62,10 @@ public class P{
     
     public static String s(String key, String def){
         return p.s(key, def);
+    }
+    
+    public static void list(String prefix, Consumer<String> consumer){
+        p.list(prefix, consumer);
     }
     
     public static String getValues(String prefix){

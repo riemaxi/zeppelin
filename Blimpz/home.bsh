@@ -1,2 +1,16 @@
 class Home{
-}
+};
+
+context = null;
+
+init(){
+};
+
+ui(){
+};
+
+controller(){
+};
+
+loaded(){
+};
