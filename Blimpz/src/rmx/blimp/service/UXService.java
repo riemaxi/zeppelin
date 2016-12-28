@@ -43,6 +43,7 @@ public class UXService extends Service{
         super(port);
         this.maxContentSize = maxContentSize;
         this.www = www;
+        this.name = "UX";
     }
     
     @Override

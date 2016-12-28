@@ -1,1 +1,3 @@
+ux.www: www
+admin.www: www
 stream.source.popgen: rmx.zepp.bio.Popgen

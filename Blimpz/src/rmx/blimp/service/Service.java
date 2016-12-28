@@ -11,12 +11,14 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import java.util.function.Consumer;
 
 /**
  *
  * @author Samuel
  */
 public class Service {
+    protected String name;
     protected final int port;
     protected EventLoopGroup boss;
     Channel channel;
@@ -27,17 +29,17 @@ public class Service {
         this.port = port;
     }
     
-    protected void close(){
+    protected void close(Consumer<String> consumer){
         channel.close();
         worker.shutdownGracefully();
-        boss.shutdownGracefully();
+        boss.shutdownGracefully().addListener( __ -> consumer.accept("closed") );
    }
     
     protected ChannelInitializer getInitializer(){
         throw new UnsupportedOperationException();
     }
     
-    public void start(){
+    public void start(Consumer<String> consumer){
         boss = new NioEventLoopGroup(1);
         worker = new NioEventLoopGroup();
         try{
@@ -48,13 +50,13 @@ public class Service {
             
             channel = b.bind(port).sync().channel();
         }catch(Exception e){
-            close();
+            close(consumer);
         }
         
     }
 
-    public void stop(){
-        close();
+    public void stop(Consumer<String> consumer){
+        close(consumer);
     }
     
 }

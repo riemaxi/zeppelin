@@ -1,1 +1,1 @@
-home: http://localhost/ux/home.bsh
+home: http://localhost:8888/bio/popgen.bsh

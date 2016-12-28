@@ -23,10 +23,22 @@ public class Main {
     static ExplorerService xs;
     static AdminService adms;
     
+    static void start(Service ... services){
+        for(Service s: services){
+            s.start( __ -> System.out.println(s.name + " stopped") );
+            System.out.println(s.name + " service listening on port " + s.port);
+        }
+    }
+
+    static void stop(Service ... services){
+        for(Service s: services){
+            System.out.println(s.name + " service closing");
+            s.stop( __ -> System.out.println(s.name + " service closed"));
+        }
+    }
+    
     static void prompt(String commandQuit){
         try(Scanner sc = new Scanner(new BufferedInputStream(System.in))){
-            System.out.println("UX service listening on port " + uxs.port);
-            System.out.println("Admin service listening on port " + adms.port);
             System.out.print(">");
             for(    String command = sc.nextLine(); 
                     !commandQuit.equals(command); 
@@ -56,22 +68,16 @@ public class Main {
     }
     
     public static void main(String[] args){
-        ss = new StreamService(P.i("stream.port", C.STREAM_PORT), getSources(), P.s("stream.websocketend", C.STREAM_WEBSOCKET_END));
+        //ss = new StreamService(P.i("stream.port", C.STREAM_PORT), getSources(), P.s("stream.websocketend", C.STREAM_WEBSOCKET_END));
         uxs = new UXService(P.i("ux.port", C.UX_PORT ),P.i("ux.maxcontentsize", C.UX_MAX_CONTENTSIZE),  P.s("ux.www",C.UX_WWW));
         //xs = new ExplorerService(P.i("x.port", C.X_PORT));
-        adms = new AdminService(P.i("admin.port", C.ADMIN_PORT ),P.i("admin.maxcontentsize", C.ADMIN_MAX_CONTENTSIZE),  P.s("admin.www",C.ADMIN_WWW));
+        //adms = new AdminService(P.i("admin.port", C.ADMIN_PORT ),P.i("admin.maxcontentsize", C.ADMIN_MAX_CONTENTSIZE),  P.s("admin.www",C.ADMIN_WWW));
         
-        //ss.start();
-        //xs.start();
-        uxs.start();
-        adms.start();
+        start(uxs);
         
         prompt(P.s("command.quit", C.COMMAND_QUIT));
         
-        uxs.stop();
-        //ss.stop();
-        //xs.stop();
-        adms.stop();
+        stop(uxs);
     }
     
 }

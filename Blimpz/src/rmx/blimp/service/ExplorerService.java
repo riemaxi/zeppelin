@@ -12,5 +12,6 @@ package rmx.blimp.service;
 public class ExplorerService extends Service{
     public ExplorerService(int port){
         super(port);
+        this.name = "Explorer";
     }
 }

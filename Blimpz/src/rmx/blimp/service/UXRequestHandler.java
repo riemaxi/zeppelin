@@ -91,5 +91,9 @@ public class UXRequestHandler  extends SimpleChannelInboundHandler<FullHttpReque
         }
 
     }
-    
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause){
+        ctx.close();
+    }
 }

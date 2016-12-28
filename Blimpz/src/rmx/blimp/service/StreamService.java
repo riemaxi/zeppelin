@@ -48,6 +48,7 @@ public class StreamService extends Service{
         super(port);
         this.websocketEnd = websocketEnd;
         this.sources = sources;
+        this.name = "Stream";
     }
     
     @Override

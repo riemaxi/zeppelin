@@ -15,5 +15,6 @@ import io.netty.channel.socket.SocketChannel;
 public class AdminService extends UXService{
     public AdminService(int port, int maxContentSize, String www){
         super(port,maxContentSize, www);
+        this.name = "Admin";
     }
 }
