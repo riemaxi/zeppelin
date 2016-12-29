@@ -3,11 +3,14 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package rmx.client.blimp;
+
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileWriter;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.HashMap;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -32,6 +35,18 @@ public class MainContext {
         return load(p.s("home"));
     }
     
+    protected void createStyle(){
+        File file = new File(ri.getStylePath());
+        try(FileWriter fw = new FileWriter(file)){
+            fw.write(ri.getStyleContent());
+            fw.flush();
+            
+            root.getStylesheets().clear();
+            root.getStylesheets().add("file:///" + file.getAbsolutePath().replace("\\", "/"));
+        }catch(Exception e){
+        }
+    }
+    
     public String load(String scriptAddress){
         try{
             ri.load(scriptAddress);
@@ -52,10 +67,10 @@ public class MainContext {
                     return e.toString();
                 }
             }
-            
+
+            createStyle();
             scene = new Scene(root);
             stage.setScene(scene);
-            
             ri.init(this);
            
             return null;

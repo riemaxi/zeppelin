@@ -1,3 +1,12 @@
+/*style_main
+#frame{
+    -fx-font-size: 11pt;
+    -fx-font-family: "Verdana";
+    -fx-background: blue;
+    -fx-text-fill: white;
+}
+style_main*/
+
 /*uix_main
 <?xml version="1.0" encoding="UTF-8"?>
 
@@ -6,9 +15,9 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane id="AnchorPane" prefHeight="356.0" prefWidth="599.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8">
+<AnchorPane fx:id="frame" prefHeight="356.0" prefWidth="599.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
     <children>
-        <Label fx:id="label" alignment="CENTER" contentDisplay="RIGHT" layoutX="126" layoutY="120" minHeight="16" minWidth="69" prefHeight="200.0" prefWidth="320.0" text="The GUI" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <Label fx:id="label" alignment="CENTER" contentDisplay="RIGHT" layoutX="126" layoutY="120" minHeight="16" minWidth="69" prefHeight="200.0" prefWidth="320.0" text="The GUI" AnchorPane.bottomAnchor="100.0" AnchorPane.leftAnchor="100.0" AnchorPane.rightAnchor="100.0" AnchorPane.topAnchor="100.0">
          <font>
             <Font name="Comic Sans MS" size="48.0" />
          </font></Label>
@@ -30,6 +39,18 @@ uiaddress(){
 
 ui(id){
  return "uix_" + id;
+}
+
+style(){
+    return style("main");
+}
+
+style(id){
+    return "style_" + id;
+}
+
+stylePath(){
+    return "style.css";
 }
 
 ui(){

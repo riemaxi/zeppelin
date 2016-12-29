@@ -49,4 +49,9 @@ public class StreamRequestHandler extends SimpleChannelInboundHandler<TextWebSoc
         String[] command = request.split(" ",2);
         stream(ctx, command[0], command[1]);
     }
+    
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause){
+        ctx.close();
+    }
 }

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package rmx.client.blimp;
+
 
 import bsh.Interpreter;
 import java.io.BufferedReader;
@@ -20,16 +20,13 @@ public class RootInterpreter {
     private int status;
     private final Interpreter in7r = new Interpreter();
     private String ui;
+    private String style;
     
     public RootInterpreter(){
         
     }
     
-    protected void extractUI(String source) throws Exception{
-        String uitag = in7r.eval("ui()").toString();
-        String begintag = "/*" + uitag;
-        String endtag = uitag + "*/";
-        
+    protected String extract(String begintag, String endtag, String source) throws Exception{
         BufferedReader br = new BufferedReader(new StringReader(source));
         String line = br.readLine();
         while(line != null){
@@ -50,7 +47,21 @@ public class RootInterpreter {
               line = br.readLine();
           }
         }
-        ui = uib != null && line.equals(endtag) ? uib.toString() : null;
+        return uib != null && line.equals(endtag) ? uib.toString() : null;
+    }
+    
+    protected void extractUI(String source) throws Exception{
+        String uitag = in7r.eval("ui()").toString();
+        String begintag = "/*" + uitag;
+        String endtag = uitag + "*/";
+        ui = extract(begintag, endtag, source);
+    }
+
+    protected void extractStyle(String source) throws Exception{
+        String uitag = in7r.eval("style()").toString();
+        String begintag = "/*" + uitag;
+        String endtag = uitag + "*/";
+        style = extract(begintag, endtag, source);
     }
     
     public RootInterpreter load(String urlpath){
@@ -60,6 +71,7 @@ public class RootInterpreter {
             in7r.eval(source);
             in7r.eval("loaded()");
             extractUI(source);
+            extractStyle(source);
             return this;
         }catch(Exception e){
             System.out.println(e);
@@ -79,6 +91,18 @@ public class RootInterpreter {
     
     public String getUI(){
         return ui;
+    }
+
+    public String getStylePath(){
+        try{
+            return in7r.eval("stylePath()").toString();
+        }catch(Exception e){
+            return null;
+        }
+    }
+    
+    public String getStyleContent(){
+        return style;
     }
     
     public Object getController(){
