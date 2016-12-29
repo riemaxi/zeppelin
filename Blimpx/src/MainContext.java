@@ -12,9 +12,11 @@ import java.io.FileWriter;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.function.Consumer;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
 import rmx.Parameter;
 
@@ -30,6 +32,16 @@ public class MainContext {
     public Scene scene;
     public Stage stage;
     public Parameter p;
+
+    public void stream(String source, Consumer consumer){
+        for(int i=0; i<100; i++){
+            consumer.accept("data " + i);
+        }
+    }
+    
+    public Object get(String id){
+        return scene.lookup(String.format("#%s",id));
+    }
     
     public String load(){
         return load(p.s("home"));
@@ -55,13 +67,11 @@ public class MainContext {
             String ui = ri.getUIaddress();
             if (ui != null){
                 loader = new FXMLLoader( new URL(ui));
-                loader.setController(ri.getController());                
-                root = loader.load();                                
+                root = loader.load(); 
             }
             else{
                 loader = new FXMLLoader();
                 try(BufferedInputStream bis = new BufferedInputStream(new ByteArrayInputStream(ri.getUI().getBytes()))){
-                    loader.setController(ri.getController());
                     root = loader.load(bis);
                 }catch(Exception e){
                     return e.toString();
@@ -71,8 +81,7 @@ public class MainContext {
             createStyle();
             scene = new Scene(root);
             stage.setScene(scene);
-            ri.init(this);
-           
+
             return null;
         }catch(Exception e){
             return e.toString();
@@ -85,8 +94,10 @@ public class MainContext {
     
     public Object loadAndshow(String scriptaddress){
         Object error = load(scriptaddress);
-        if (error == null)
+        if (error == null){
             stage.show();
+            ri.init(this);
+        }
 
         return error;
     }

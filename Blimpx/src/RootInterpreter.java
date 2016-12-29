@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.net.URL;
 import java.util.Scanner;
+import javafx.fxml.Initializable;
 
 /**
  *
@@ -23,7 +24,7 @@ public class RootInterpreter {
     private String style;
     
     public RootInterpreter(){
-        
+
     }
     
     protected String extract(String begintag, String endtag, String source) throws Exception{
