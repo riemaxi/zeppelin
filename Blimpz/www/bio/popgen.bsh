@@ -54,8 +54,8 @@ generation(n, freq){
 
     return this;
 };
-generations = 6000;
-genlist = new ArrayList();
+generations = 100;
+genlist = Collections.synchronizedList( new ArrayList() );
 
 command = null;
 view = null;
@@ -66,6 +66,7 @@ rmargin = 0.0;
 xscale = 1;
 yscale = 1;
 bgColor = "#DDDDDD";
+playSpeed = 100;
 //End model
 
 execute(c){
@@ -80,7 +81,9 @@ execute(c){
 streamHandler(){
     return new Consumer(){
         accept(gen){
-            genlist.add( generation(gen.genr, gen.frequency) );
+            synchronized(genlist){
+                 genlist.add( generation(gen.genr, gen.frequency) );
+            }
         }
     };
 }
@@ -99,10 +102,14 @@ commandHandler(){
 playerHandler(){
     return new Consumer(){
         accept(data){
-            paint();
-            if (genlist.size()>=generations)
-                context.player.stop();
+            synchronized(genlist){
+                paint();
+
+                if (genlist.size()>=generations)
+                    context.player.stop();
+            }
         }
+
     };
 }
 
@@ -151,14 +158,26 @@ setScale(){
     yscale = view.getHeight();
 }
 
+paintTracks(){
+    gc = view.getGraphicsContext2D();
+    gc.setFill(Color.BLACK);
+
+    for(g : genlist){
+        for(f : g.frequency)
+            gc.fillOval(g.nr * xscale, (1-f) *yscale, 5,5);
+    }
+
+}
+
 paint(){
     setScale();
     clearBackground();
+    paintTracks();
 }
 
 stream(source){
     genlist.clear();
-    context.player.play(500, playerHandler());
+    context.player.play(playSpeed, playerHandler());
     context.stream(source, streamHandler() );
 }
 

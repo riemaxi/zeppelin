@@ -57,7 +57,7 @@ public class Simulator{
         initFreq = p.d("initFreq", 0.5);
         
         populations = p.i("populations",10);
-        generations = p.i("generations",6000);
+        generations = p.i("generations",100);
         
         long seed = p.l("seed",-1);
         random = seed >= 0 ? new Random(seed) : new Random();
@@ -76,9 +76,13 @@ public class Simulator{
     
     public void start(Parameter p, Consumer<Generation> consumer){
         init(p);
-        for(int g=0; g<generations; g++ ){
-            consumer.accept(nextGeneration(g));
-        }
+        new Thread(
+                ()->{
+                    for(int g=0; g<generations; g++ ){
+                        consumer.accept(nextGeneration(g));
+                    }
+                }
+        ).start();
     }
     
     private int binomial(int n, double pp){
