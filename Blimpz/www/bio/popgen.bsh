@@ -2,7 +2,7 @@
 #frame{
     -fx-font-size: 11pt;
     -fx-font-family: "Verdana";
-    -fx-background: blue;
+    -fx-background: white;
     -fx-text-fill: white;
 }
 style_main*/
@@ -13,6 +13,7 @@ style_main*/
 <?import java.lang.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.canvas.*?>
 
 <AnchorPane  fx:id="frame" prefHeight="426.0" prefWidth="657.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" >
    <children>
@@ -20,7 +21,7 @@ style_main*/
         <items>
           <AnchorPane fx:id="viewHost" minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
                <children>
-                  <TextArea fx:id="view" editable="false" prefHeight="111.0" prefWidth="318.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                  <Canvas fx:id="view" height="200.0" width="200.0" AnchorPane.bottomAnchor="14.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="14.0" />
                </children>
             </AnchorPane>
           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
@@ -38,9 +39,13 @@ uix_main*/
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.event.EventHandler;
+import javafx.scene.paint.Color;
 import java.lang.String;
 import java.util.function.Consumer;
+import javafx.beans.value.ChangeListener;
+import javafx.scene.layout.AnchorPane;
 
+//Begin model
 generation(n, freq){
     int nr = n;
     double[] frequency = new double[freq.length];
@@ -49,13 +54,19 @@ generation(n, freq){
 
     return this;
 };
-
 generations = 6000;
-
 genlist = new ArrayList();
 
 command = null;
 view = null;
+vframe = null;
+
+bmargin = 0.0;
+rmargin = 0.0;
+xscale = 1;
+yscale = 1;
+bgColor = "#DDDDDD";
+//End model
 
 execute(c){
     this.args = c.split(" ");
@@ -88,26 +99,61 @@ commandHandler(){
 playerHandler(){
     return new Consumer(){
         accept(data){
-            plot();
+            paint();
             if (genlist.size()>=generations)
                 context.player.stop();
         }
     };
 }
 
+frameHhandler(){
+    return new ChangeListener(){    
+        changed(ob, ov, nv){
+            adjust(ov, nv, false);
+        }
+    };
+}
+
+frameWhandler(){
+    return new ChangeListener(){    
+        changed(ob, ov, nv){
+            adjust(ov, nv, true );
+        }
+    };
+}
+
+
 //Utils
-plot(){
-    str = new StringBuffer();
-    
-    for(g : genlist){
-        gstr = new StringBuffer();
-        for(f : g.frequency)
-            gstr.append(gstr.length()==0?"":" ").append(f);
+adjust(){
+   view.setWidth(vframe.getWidth() - 2*rmargin);
+   view.setHeight(vframe.getHeight() - 2*bmargin);
 
-        str.append(str.length()==0?"":"\n").append(gstr.toString());
-    }
+    paint();        
+}
 
-    view.setText(str.toString());
+adjust(ov,nv,w){
+    if (w)
+      view.setWidth(nv.doubleValue() - 2*rmargin);
+    else
+      view.setHeight(nv.doubleValue() - 2*bmargin);
+
+    paint();        
+}
+
+clearBackground(){
+    gc = view.getGraphicsContext2D();
+    gc.setFill(Color.valueOf(bgColor));
+    gc.fillRect(0, 0, view.getWidth(), view.getHeight());
+}
+
+setScale(){
+    xscale = view.getWidth()/(generations-1);
+    yscale = view.getHeight();
+}
+
+paint(){
+    setScale();
+    clearBackground();
 }
 
 stream(source){
@@ -120,13 +166,22 @@ stream(source){
 
 
 //Begin interface
-context = null;
-
 init(){
+    vframe = context.get("viewHost");
+    vframe.heightProperty().addListener(frameHhandler());
+    vframe.widthProperty().addListener(frameWhandler());
+
     view = context.get("view");
 
     command = context.get("command");
     command.addEventHandler(KeyEvent.KEY_RELEASED, commandHandler());
+
+    bmargin = AnchorPane.getBottomAnchor(view).doubleValue();
+    rmargin = AnchorPane.getRightAnchor(view).doubleValue();
+
+    context.stage.setTitle("Advanced Population Genetics");
+
+    adjust();
 }
 
 uiaddress(){
