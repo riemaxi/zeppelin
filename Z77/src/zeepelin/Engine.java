@@ -13,12 +13,10 @@ import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import javafx.animation.AnimationTimer;
-import javafx.application.Platform;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Polyline;
 
 /**
  *
@@ -65,7 +63,7 @@ public class Engine {
         }
     }
     
-    static class Evolution{
+    static class EvolutionGraph{
         List<Track> tracks = new ArrayList<>();
         void reset(){
             tracks.clear();
@@ -82,8 +80,8 @@ public class Engine {
     private Color defaultColor;
     private Color lostColor;
     private double[] lastFreq;
-    private Evolution evolution;
-    private int speed = 100;
+    private EvolutionGraph graph;
+    private int speed = 3;
     private double xscale;
     private double yscale;
     
@@ -91,7 +89,7 @@ public class Engine {
         this.varea = varea;
         bmargin = AnchorPane.getBottomAnchor(varea).doubleValue();
         rmargin = AnchorPane.getRightAnchor(varea).doubleValue();
-        evolution = new Evolution();
+        graph = new EvolutionGraph();
     }
     
     public void reset(){
@@ -104,11 +102,11 @@ public class Engine {
         lostColor = Color.RED;
         defaultColor = Color.BLUE;
         
-        evolution.reset();
+        graph.reset();
         Stream
                 .generate(() -> new Track())
                 .limit(populations)
-                .forEach( track -> evolution.tracks.add(track));
+                .forEach( track -> graph.tracks.add(track));
         
         setScale();        
     }
@@ -131,7 +129,7 @@ public class Engine {
     
     protected void paintTracks(int genr){
         GraphicsContext gc = varea.getGraphicsContext2D();
-        evolution
+        graph
                 .tracks
                 .stream()
                 .forEach(track -> {
@@ -165,7 +163,7 @@ public class Engine {
                             .range(0, populations)
                             .parallel()
                             .forEach(i -> {
-                                Track track = evolution.tracks.get(i);
+                                Track track = graph.tracks.get(i);
                                 if (freq[i]>0){
                                     track.segments.add(new Segment(g.genr,  1-freq[i], defaultColor));
                                     
@@ -221,7 +219,7 @@ public class Engine {
                 paintTracks(0);
             }
 
-            counter %= speed;
+            counter = (counter+1) % speed;
         }
     };
     

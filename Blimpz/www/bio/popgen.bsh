@@ -41,13 +41,26 @@ import javafx.event.EventHandler;
 import java.lang.String;
 import java.util.function.Consumer;
 
+generation(n, freq){
+    int nr = n;
+    double[] frequency = new double[freq.length];
+    for(i=0; i<freq.length; i++)
+        frequency[i] = freq[i];
+
+    return this;
+};
+
+generations = 6000;
+
+genlist = new ArrayList();
+
 command = null;
 view = null;
 
 execute(c){
     this.args = c.split(" ");
     switch(args[0].trim()){
-        case "stream" : context.stream(this.args[1].trim(), streamHandler() ); break;
+        case "stream" : stream(this.args[1].trim()); break;
         default: view.setText("no command\n" + view.getText());
     }
 }
@@ -55,8 +68,8 @@ execute(c){
 //Handlers
 streamHandler(){
     return new Consumer(){
-        accept(data){
-            view.setText(data + "\n" + view.getText());
+        accept(gen){
+            genlist.add( generation(gen.genr, gen.frequency) );
         }
     };
 }
@@ -65,12 +78,44 @@ commandHandler(){
     return new EventHandler(){
         handle(ev){
             if (ev.getCode() == KeyCode.ENTER){
-                list = command.getText().split("\n");
-                execute(list[list.length-1].trim());
+                String[] params = command.getText().split("\n");
+                execute(params[params.length-1].trim());
             }
         }
     };
 }
+
+playerHandler(){
+    return new Consumer(){
+        accept(data){
+            plot();
+            if (genlist.size()>=generations)
+                context.player.stop();
+        }
+    };
+}
+
+//Utils
+plot(){
+    str = new StringBuffer();
+    
+    for(g : genlist){
+        gstr = new StringBuffer();
+        for(f : g.frequency)
+            gstr.append(gstr.length()==0?"":" ").append(f);
+
+        str.append(str.length()==0?"":"\n").append(gstr.toString());
+    }
+
+    view.setText(str.toString());
+}
+
+stream(source){
+    genlist.clear();
+    context.player.play(500, playerHandler());
+    context.stream(source, streamHandler() );
+}
+
 //End controller
 
 

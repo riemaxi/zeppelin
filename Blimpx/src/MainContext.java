@@ -32,11 +32,11 @@ public class MainContext {
     public Scene scene;
     public Stage stage;
     public Parameter p;
+    public Player player;
 
     public void stream(String source, Consumer consumer){
-        for(int i=0; i<100; i++){
-            consumer.accept("data " + i);
-        }
+        Simulator sim = new Simulator();
+        sim.start(p, generation -> consumer.accept(generation));
     }
     
     public Object get(String id){
@@ -89,6 +89,7 @@ public class MainContext {
     }
     
     public Object loadAndshow(){
+        
         return loadAndshow(p.s("home"));
     }
     
@@ -106,6 +107,7 @@ public class MainContext {
         this.stage = stage;
         this.p = p;
         this.data = data;
+        player = new Player();
         ri = new RootInterpreter();        
     }
 }
