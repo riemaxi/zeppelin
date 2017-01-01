@@ -11,22 +11,35 @@ style_main*/
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import java.lang.*?>
+<?import javafx.scene.canvas.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.canvas.*?>
 
-<AnchorPane  fx:id="frame" prefHeight="426.0" prefWidth="657.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" >
+<AnchorPane fx:id="frame" prefHeight="426.0" prefWidth="657.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
    <children>
-      <SplitPane fx:id="splitter" dividerPositions="0.7525252525252525" focusTraversable="true" orientation="VERTICAL" prefHeight="200.0" prefWidth="320.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <SplitPane fx:id="mainsplitter" dividerPositions="0.7525252525252525" focusTraversable="true" orientation="VERTICAL" prefHeight="200.0" prefWidth="320.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <items>
           <AnchorPane fx:id="viewHost" minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
                <children>
-                  <Canvas fx:id="view" height="200.0" width="200.0" AnchorPane.bottomAnchor="14.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="14.0" />
+                  <Canvas fx:id="view" height="200.0" width="200.0" AnchorPane.bottomAnchor="30.0" AnchorPane.leftAnchor="30.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="14.0" />
                </children>
             </AnchorPane>
           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
                <children>
-                  <TextArea id="command" prefHeight="81.0" prefWidth="318.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                  <SplitPane fx:id="commandsplitter" dividerPositions="0.6110260336906586" focusTraversable="true" prefHeight="102.0" prefWidth="655.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <items>
+                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+                           <children>
+                              <TextArea fx:id="command" prefHeight="100.0" prefWidth="396.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                           </children>
+                        </AnchorPane>
+                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+                           <children>
+                              <TextArea fx:id="stats" prefHeight="100.0" prefWidth="251.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                           </children>
+                        </AnchorPane>
+                    </items>
+                  </SplitPane>
                </children>
             </AnchorPane>
         </items>
@@ -44,6 +57,7 @@ import java.lang.String;
 import java.util.function.Consumer;
 import javafx.beans.value.ChangeListener;
 import javafx.scene.layout.AnchorPane;
+import java.util.concurrent.SynchronousQueue;
 
 //Begin model
 generation(n, freq){
@@ -54,26 +68,38 @@ generation(n, freq){
 
     return this;
 };
-generations = 100;
-genlist = Collections.synchronizedList( new ArrayList() );
 
+popstate(c,w){
+    Color color = c;
+    int width = w;
+    return this;
+};
+
+generations = 100;
+arrivals = new SynchronousQueue();
+genlist = new ArrayList();
+state = null;
+
+stats = null;
 command = null;
 view = null;
 vframe = null;
 
+tmargin = 0.0;
 bmargin = 0.0;
+lmargin = 0.0;
 rmargin = 0.0;
 xscale = 1;
 yscale = 1;
 bgColor = "#DDDDDD";
-playSpeed = 100;
+playSpeed = 5;
 //End model
 
 execute(c){
     this.args = c.split(" ");
     switch(args[0].trim()){
-        case "stream" : stream(this.args[1].trim()); break;
-        default: view.setText("no command\n" + view.getText());
+        case "sim" : simulate(this.args[1].trim()); break;
+        default: command.setText(command.getText() + "no command");
     }
 }
 
@@ -81,9 +107,7 @@ execute(c){
 streamHandler(){
     return new Consumer(){
         accept(gen){
-            synchronized(genlist){
-                 genlist.add( generation(gen.genr, gen.frequency) );
-            }
+            arrivals.put( generation(gen.genr, gen.frequency) );
         }
     };
 }
@@ -102,14 +126,15 @@ commandHandler(){
 playerHandler(){
     return new Consumer(){
         accept(data){
-            synchronized(genlist){
-                paint();
+            arrivals.drainTo(genlist);
+            paint();
+            summary(genlist.size()-1);
 
-                if (genlist.size()>=generations)
-                    context.player.stop();
-            }
+            if (genlist.size()>=generations){
+                context.player.stop();
+                summary(0);
+             }
         }
-
     };
 }
 
@@ -131,18 +156,41 @@ frameWhandler(){
 
 
 //Utils
-adjust(){
-   view.setWidth(vframe.getWidth() - 2*rmargin);
-   view.setHeight(vframe.getHeight() - 2*bmargin);
+reportheader = "generation\t\tfixed\t\tlost\n";
+report = new StringBuffer(reportheader);
 
-    paint();        
+summary(from){
+    if (genlist.size()==0)
+        return;
+
+    report.setLength(reportheader.length());
+    for(k=from; k<genlist.size(); k++){
+        g = genlist.get(k);
+        fixed = 0;
+        lost = 0;
+        for(i=0; i<g.frequency.length; i++){
+            f = g.frequency[i];
+            fixed = fixed + (f==1?1:0);
+            lost = lost + (f==0?1:0);
+        }
+        report.append(g.nr).append("\t\t\t").append(fixed).append("\t\t").append(lost).append("\n");
+    }
+
+    stats.setText(report.toString());
+}
+
+adjust(){
+   view.setWidth(vframe.getWidth() - (lmargin + rmargin));
+   view.setHeight(vframe.getHeight() - (tmargin + bmargin));
+
+   paint();        
 }
 
 adjust(ov,nv,w){
     if (w)
-      view.setWidth(nv.doubleValue() - 2*rmargin);
+      view.setWidth(nv.doubleValue() - (lmargin + rmargin));
     else
-      view.setHeight(nv.doubleValue() - 2*bmargin);
+      view.setHeight(nv.doubleValue() - (tmargin + bmargin));
 
     paint();        
 }
@@ -158,15 +206,36 @@ setScale(){
     yscale = view.getHeight();
 }
 
+updateStateColor(){
+    if (genlist.size()>0){
+        gen = genlist.get(genlist.size()-1);
+        for(i=0; i<gen.frequency.length; i++){
+            f = gen.frequency[i];
+            state[i].color = (f==1?Color.GREEN:(f==0?Color.RED:Color.BLACK));
+        }
+     }
+}
+
+
 paintTracks(){
+    updateStateColor();
     gc = view.getGraphicsContext2D();
     gc.setFill(Color.BLACK);
+    for(i=1; i<genlist.size(); i++){
+        prevg = genlist.get(i-1);
+        g = genlist.get(i);
+        for(k=0; k< g.frequency.length; k++){
+            gc.setStroke(state[k].color);
+            gc.setLineWidth(state[k].width);
 
-    for(g : genlist){
-        for(f : g.frequency)
-            gc.fillOval(g.nr * xscale, (1-f) *yscale, 5,5);
+            ax = (i-1) * xscale;
+            ay = (1-prevg.frequency[k]) *yscale;
+            bx = i * xscale;
+            by = (1-g.frequency[k]) *yscale;
+
+            gc.strokeLine(ax,ay, bx, by);
+        }
     }
-
 }
 
 paint(){
@@ -175,8 +244,13 @@ paint(){
     paintTracks();
 }
 
-stream(source){
+simulate(source){
+    state = new Object[10];
+    for(i=0; i<state.length; i++)
+        state[i] = popstate(Color.BLACK, 2);
+
     genlist.clear();
+    arrivals.clear();
     context.player.play(playSpeed, playerHandler());
     context.stream(source, streamHandler() );
 }
@@ -191,11 +265,14 @@ init(){
     vframe.widthProperty().addListener(frameWhandler());
 
     view = context.get("view");
+    stats = context.get("stats");
 
     command = context.get("command");
     command.addEventHandler(KeyEvent.KEY_RELEASED, commandHandler());
 
+    tmargin = AnchorPane.getTopAnchor(view).doubleValue();
     bmargin = AnchorPane.getBottomAnchor(view).doubleValue();
+    lmargin = AnchorPane.getLeftAnchor(view).doubleValue();
     rmargin = AnchorPane.getRightAnchor(view).doubleValue();
 
     context.stage.setTitle("Advanced Population Genetics");
