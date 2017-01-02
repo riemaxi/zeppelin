@@ -34,9 +34,21 @@ public class MainContext {
     public Parameter p;
     public Player player;
 
-    public void stream(String source, Consumer consumer){
-        Simulator sim = new Simulator();
+    private Simulator sim = new Simulator();
+    public void startStreaming(String source, Consumer consumer){
         sim.start(p, generation -> consumer.accept(generation));
+    }
+    
+    public void stopStreaming(){
+        sim.stop();
+    }
+    
+    public void startPlayer(int speed, Consumer consumer){
+        player.play(speed, consumer);
+    }
+    
+    public void stopPlayer(){
+        player.stop();
     }
     
     public Object get(String id){

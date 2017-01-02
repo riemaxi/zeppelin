@@ -1,5 +1,6 @@
 
 
+import java.util.Arrays;
 import java.util.Random;
 import java.util.function.Consumer;
 import java.util.stream.DoubleStream;
@@ -20,19 +21,26 @@ public class Simulator{
     public static class Generation{
         public int genr;
         public double[] frequency;
+
+        public Generation(int genr, double[] frequency){
+            this.genr = genr;
+            this.frequency = Arrays.copyOf(frequency, frequency.length);
+        }
+        
+        
         public Generation set(double[] frequency){
-            this.frequency = frequency;
+            this.frequency = Arrays.copyOf(frequency, frequency.length);
             return this;
         }
         
         public Generation set(int genr, double[] frequency){
             this.genr = genr;
-            this.frequency = frequency;
+            this.frequency = Arrays.copyOf(frequency, frequency.length);
             return this;
         }
     }
     
-    private final Generation generation = new Generation();
+    //private final Generation generation = new Generation();
     
     private double[] frequency;
     private Random random;
@@ -46,6 +54,7 @@ public class Simulator{
     private double saa;
     private int popSize;
     private double initFreq;
+    private volatile boolean running;
     
     public void init(Parameter p){
         A_a = p.d("A_a",0.0);
@@ -56,8 +65,8 @@ public class Simulator{
         popSize = p.i("popSize",50);
         initFreq = p.d("initFreq", 0.5);
         
-        populations = p.i("populations",10);
-        generations = p.i("generations",100);
+        populations = p.i("populations",50);
+        generations = p.i("generations",1);
         
         long seed = p.l("seed",-1);
         random = seed >= 0 ? new Random(seed) : new Random();
@@ -70,19 +79,29 @@ public class Simulator{
     }
     
     public Generation nextGeneration(int g){
+        Generation gen = new Generation(g,frequency);
         update();
-        return generation.set(g,frequency);
+        return gen;
     }
     
+    public void stop(){
+        running = false;
+    }
+    
+    Thread process;
     public void start(Parameter p, Consumer<Generation> consumer){
         init(p);
-        new Thread(
+        running = true;
+         process = new Thread(
                 ()->{
-                    for(int g=0; g<generations; g++ ){
+                    
+                    for(int g=0; g<generations && running; g++ ){
                         consumer.accept(nextGeneration(g));
                     }
                 }
-        ).start();
+        );
+        process.setDaemon(true);
+        process.start();
     }
     
     private int binomial(int n, double pp){

@@ -21,6 +21,8 @@ style_main*/
         <items>
           <AnchorPane fx:id="viewHost" minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
                <children>
+                  <Canvas height="23.0" width="200.0" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="30.0" AnchorPane.rightAnchor="14.0" fx:id="xaxis" />
+                  <Canvas fx:id="yaxis" height="200.0" width="23.0" AnchorPane.bottomAnchor="30.0" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="14.0" />
                   <Canvas fx:id="view" height="200.0" width="200.0" AnchorPane.bottomAnchor="30.0" AnchorPane.leftAnchor="30.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="14.0" />
                </children>
             </AnchorPane>
@@ -58,15 +60,20 @@ import java.util.function.Consumer;
 import javafx.beans.value.ChangeListener;
 import javafx.scene.layout.AnchorPane;
 import java.util.concurrent.SynchronousQueue;
+import javafx.scene.text.Font;
 
 //Begin model
 generation(n, freq){
     int nr = n;
-    double[] frequency = new double[freq.length];
-    for(i=0; i<freq.length; i++)
-        frequency[i] = freq[i];
+    double[] frequency = Arrays.copyOf(freq,freq.length);
 
     return this;
+};
+
+generationComparator = new Comparator(){
+    compare(a,b){
+        return a.nr < b.nr ? -1 : (a.nr > b.nr? 1: 0);
+    }
 };
 
 popstate(c,w){
@@ -75,14 +82,17 @@ popstate(c,w){
     return this;
 };
 
-generations = 100;
-arrivals = new SynchronousQueue();
-genlist = new ArrayList();
+generations = 1;
+populations = 50;
+arrivals = null;
+genlist = null;
 state = null;
 
 stats = null;
 command = null;
 view = null;
+xaxis = null;
+yaxis = null;
 vframe = null;
 
 tmargin = 0.0;
@@ -93,12 +103,17 @@ xscale = 1;
 yscale = 1;
 bgColor = "#DDDDDD";
 playSpeed = 5;
+
+AXIS_FONT = new Font(8);
+
+fixed = 0;
+lost = 0;
 //End model
 
 execute(c){
     this.args = c.split(" ");
     switch(args[0].trim()){
-        case "sim" : simulate(this.args[1].trim()); break;
+        case "sim" : startSimulation(this.args[1].trim()); break;
         default: command.setText(command.getText() + "no command");
     }
 }
@@ -125,14 +140,15 @@ commandHandler(){
 
 playerHandler(){
     return new Consumer(){
+        simSummary = summary();
         accept(data){
             arrivals.drainTo(genlist);
             paint();
-            summary(genlist.size()-1);
+            simSummary.showLast();
 
-            if (genlist.size()>=generations){
-                context.player.stop();
-                summary(0);
+            if (genlist.size()>=generations || (fixed + lost == populations)){
+                stopSimulation();
+                simSummary.show();
              }
         }
     };
@@ -156,16 +172,14 @@ frameWhandler(){
 
 
 //Utils
-reportheader = "generation\t\tfixed\t\tlost\n";
-report = new StringBuffer(reportheader);
+summary(){
+    reportheader = "generation\t\tfixed\t\tlost\n";
+    report = new StringBuffer(reportheader);
 
-summary(from){
-    if (genlist.size()==0)
-        return;
-
-    report.setLength(reportheader.length());
-    for(k=from; k<genlist.size(); k++){
-        g = genlist.get(k);
+    showLast(){
+        if (genlist.size()==0)
+            return;
+        g = genlist.get(genlist.size()-1);
         fixed = 0;
         lost = 0;
         for(i=0; i<g.frequency.length; i++){
@@ -173,24 +187,54 @@ summary(from){
             fixed = fixed + (f==1?1:0);
             lost = lost + (f==0?1:0);
         }
+        report.setLength(reportheader.length());
         report.append(g.nr).append("\t\t\t").append(fixed).append("\t\t").append(lost).append("\n");
+        stats.setText(report.toString());
     }
 
-    stats.setText(report.toString());
+    show(){
+        if (genlist.size()==0)
+            return;
+        
+        Collections.sort(genlist, generationComparator);
+        report.setLength(reportheader.length());
+        for(k=0; k<genlist.size(); k++){
+            g = genlist.get(k);
+            total_fixed = 0;
+            total_lost = 0;
+            for(i=0; i<g.frequency.length; i++){
+                f = g.frequency[i];
+                total_fixed = total_fixed + (f==1?1:0);
+                total_lost = total_lost + (f==0?1:0);
+            }
+            report.append(g.nr).append("\t\t\t").append(total_fixed).append("\t\t").append(total_lost).append("\n");
+        }
+
+        stats.setText(report.toString());
+    }
+
+    return this;
 }
 
 adjust(){
    view.setWidth(vframe.getWidth() - (lmargin + rmargin));
    view.setHeight(vframe.getHeight() - (tmargin + bmargin));
 
+   xaxis.setWidth(vframe.getWidth() - (lmargin + rmargin));
+   yaxis.setHeight(vframe.getHeight() - (tmargin + bmargin));
+
    paint();        
 }
 
 adjust(ov,nv,w){
-    if (w)
+    if (w){
       view.setWidth(nv.doubleValue() - (lmargin + rmargin));
-    else
+      xaxis.setWidth(nv.doubleValue() - (lmargin + rmargin));
+    }
+    else{
       view.setHeight(nv.doubleValue() - (tmargin + bmargin));
+      yaxis.setHeight(nv.doubleValue() - (tmargin + bmargin));
+    }
 
     paint();        
 }
@@ -207,17 +251,18 @@ setScale(){
 }
 
 updateStateColor(){
-    if (genlist.size()>0){
-        gen = genlist.get(genlist.size()-1);
-        for(i=0; i<gen.frequency.length; i++){
-            f = gen.frequency[i];
-            state[i].color = (f==1?Color.GREEN:(f==0?Color.RED:Color.BLACK));
-        }
-     }
+    gen = genlist.get(genlist.size()-1);
+    for(i=0; i<gen.frequency.length; i++){
+        f = gen.frequency[i];
+        state[i].color = (f==1?Color.GREEN:(f==0?Color.RED:Color.BLACK));
+    }
 }
 
 
 paintTracks(){
+    if (genlist == null || genlist.size() ==0)
+        return;
+
     updateStateColor();
     gc = view.getGraphicsContext2D();
     gc.setFill(Color.BLACK);
@@ -225,34 +270,79 @@ paintTracks(){
         prevg = genlist.get(i-1);
         g = genlist.get(i);
         for(k=0; k< g.frequency.length; k++){
-            gc.setStroke(state[k].color);
-            gc.setLineWidth(state[k].width);
+            prevf = prevg.frequency[k];
+            if (prevf>0 && prevf<1){
+                gc.setStroke(state[k].color);
+                gc.setLineWidth(state[k].width);
 
-            ax = (i-1) * xscale;
-            ay = (1-prevg.frequency[k]) *yscale;
-            bx = i * xscale;
-            by = (1-g.frequency[k]) *yscale;
+                ax = (i-1) * xscale;
+                ay = (1-prevf) *yscale;
+                bx = i * xscale;
+                by = (1-g.frequency[k]) *yscale;
 
-            gc.strokeLine(ax,ay, bx, by);
+                gc.strokeLine(ax,ay, bx, by);
+            }
         }
     }
+}
+
+paintYaxis(){
+    gc = yaxis.getGraphicsContext2D();
+
+    gc.setFont(AXIS_FONT);
+    gc.setFill(Color.valueOf(bgColor));
+    gc.fillRect(0, 0, yaxis.getWidth(), yaxis.getHeight());
+    gc.setStroke(Color.BLACK);
+    for(i=1; i<=9; i++){
+        gc.strokeText("0." + (10-i), 2, (yscale * i)/10);
+    }
+}
+
+paintXaxis(){
+    gc = xaxis.getGraphicsContext2D();
+
+    gc.setFont(AXIS_FONT);
+    gc.setFill(Color.valueOf(bgColor));
+    gc.fillRect(0, 0, xaxis.getWidth(), xaxis.getHeight());
+    gc.setStroke(Color.BLACK);
+
+    step =  generations<=10 ? 1: generations/10;
+    ypos = xaxis.getHeight() - 10;
+    for(i=step; i<generations; i+=step){
+        gc.strokeText(i + "", xscale * i, ypos);
+    }
+
+}
+
+paintAxis(){
+    paintYaxis();
+    paintXaxis();
 }
 
 paint(){
     setScale();
     clearBackground();
+    paintAxis();
     paintTracks();
 }
 
-simulate(source){
-    state = new Object[10];
+stopSimulation(){
+    context.stopPlayer();
+    context.stopStreaming();
+}
+
+startSimulation(source){
+    stopSimulation();
+    arrivals = new SynchronousQueue();
+    genlist = new ArrayList();
+    fixed = 0;
+    lost = 0;
+    state = new Object[populations];
     for(i=0; i<state.length; i++)
         state[i] = popstate(Color.BLACK, 2);
 
-    genlist.clear();
-    arrivals.clear();
-    context.player.play(playSpeed, playerHandler());
-    context.stream(source, streamHandler() );
+    context.startPlayer(playSpeed, playerHandler());
+    context.startStreaming(source, streamHandler());
 }
 
 //End controller
@@ -265,6 +355,8 @@ init(){
     vframe.widthProperty().addListener(frameWhandler());
 
     view = context.get("view");
+    xaxis = context.get("xaxis");
+    yaxis = context.get("yaxis");
     stats = context.get("stats");
 
     command = context.get("command");

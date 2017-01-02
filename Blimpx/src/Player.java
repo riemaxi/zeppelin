@@ -48,7 +48,7 @@ public class Player extends AnimationTimer {
     
     public void play(int speed, Consumer consumer){
         play(speed,-1,consumer);
-    }   
+    } 
     
     public void play(int speed, int times, Consumer consumer){
         this.speed = speed;
