@@ -16,9 +16,13 @@ public interface Solver<S extends Space, Solution> {
     S getSpace();
     Constraint<S> getConstraint();
     Propagator getPropagator();
+
+    default void propagate(Consumer<Solution> collector){
+        getPropagator().propagate(this, getSpace(), getConstraint(), collector);        
+    }
     
-    default boolean inside(S space, Constraint<S> constraint){
-        return constraint.holdsFor(space);
+    default boolean inside(){
+        return getConstraint().holdsFor(getSpace());
     }
     
     default boolean solved(){
@@ -29,7 +33,7 @@ public interface Solver<S extends Space, Solution> {
         if (solved())
             collector.accept(getSolution());
         else
-            if (inside(getSpace(), getConstraint()))
-                getPropagator().propagate(this, getSpace(), getConstraint(), collector);
+            if (inside())
+                propagate(collector);
     }
 }
