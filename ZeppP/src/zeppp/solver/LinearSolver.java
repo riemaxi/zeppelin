@@ -18,16 +18,18 @@ import zeppp.core.Solver;
 public class LinearSolver implements Solver<LinearSpace, LinearSolution>, Propagator<LinearSpace, LinearConstraint, LinearSolution> {
     private LinearSpace space;
     private LinearConstraint constraint;
+    private LinearSolver parent;
 
-    public LinearSolver(LinearConstraint constraint, LinearSpace space, Consumer<LinearSolution> collector){
-        this(null, constraint, space, collector);
+    public LinearSolver(LinearConstraint constraint, LinearSpace space){
+        this(null, constraint, space);
     }
     
-    public LinearSolver(LinearSolver parent, LinearConstraint constraint, LinearSpace space, Consumer<LinearSolution> collector){
+    public LinearSolver(LinearSolver parent, LinearConstraint constraint, LinearSpace space){
+        this.parent = parent;
         this.constraint = constraint;
         this.space = space;
         
-        solve(collector);
+        solve();
     }
     
     @Override
@@ -51,21 +53,31 @@ public class LinearSolver implements Solver<LinearSpace, LinearSolution>, Propag
     }
 
     @Override
-    public void propagate(Solver parent, LinearSpace space, LinearConstraint constraint, Consumer<LinearSolution> collector) {
+    public void propagate(Solver parent, LinearSpace space, LinearConstraint constraint) {
         try{
-            Executors.callable(() -> lowPropagation(space, collector)).call();
-            Executors.callable(() -> highPropagation(space, collector)).call();
+            Executors.callable(() -> lowPropagation(space)).call();
+            Executors.callable(() -> highPropagation(space)).call();
         }catch(Exception e){
             System.out.println(e);
         }
     }
     
-    private void lowPropagation(LinearSpace space, Consumer<LinearSolution> collector){
-        new LinearSolver(this, getConstraint(), space.low(), collector);
+    private void lowPropagation(LinearSpace space){
+        new LinearSolver(this, getConstraint(), space.low());
     }
     
-    private void highPropagation(LinearSpace space, Consumer<LinearSolution> collector){
-        new LinearSolver(this, getConstraint(), space.high(), collector);
+    private void highPropagation(LinearSpace space){
+        new LinearSolver(this, getConstraint(), space.high());
     }
-    
+
+    /*@Override
+    public void accept(LinearSolution t) {
+        if (parent != null)
+            parent.accept(t);
+    }*/
+
+    @Override
+    public Solver getParent() {
+        return parent;
+    }
 }

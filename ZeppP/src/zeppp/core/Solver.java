@@ -6,19 +6,21 @@
 package zeppp.core;
 
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 /**
  *
  * @author Samuel
  */
-public interface Solver<S extends Space, Solution> {
+public interface Solver<S extends Space, Solution> extends Consumer<Solution> {
     Solution getSolution();
     S getSpace();
     Constraint<S> getConstraint();
     Propagator getPropagator();
+    Solver getParent();
 
-    default void propagate(Consumer<Solution> collector){
-        getPropagator().propagate(this, getSpace(), getConstraint(), collector);        
+    default void propagate(){
+        getPropagator().propagate(this, getSpace(), getConstraint());        
     }
     
     default boolean inside(){
@@ -29,11 +31,17 @@ public interface Solver<S extends Space, Solution> {
         return getSpace().isFixed() && getConstraint().holdsFor(getSpace());
     }
     
-    default void solve(Consumer<Solution> collector){
+    default void solve(){
         if (solved())
-            collector.accept(getSolution());
+            accept(getSolution());
         else
             if (inside())
-                propagate(collector);
+                propagate();
+    }
+    
+    default void accept(Solution s){
+        Solver parent = getParent();
+        if (parent != null)
+            parent.accept(s);
     }
 }

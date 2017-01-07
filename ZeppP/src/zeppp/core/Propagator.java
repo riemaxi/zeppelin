@@ -12,5 +12,5 @@ import java.util.function.Consumer;
  * @author Samuel
  */
 public interface Propagator<S extends Space, Constraint, Solution> {
-    void propagate(Solver parent, S space, Constraint constraint, Consumer<Solution> collector);
+    void propagate(Solver parent, S space, Constraint constraint);
 }
