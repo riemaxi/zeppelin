@@ -16,11 +16,14 @@ public interface Solver<S extends Space, Solution> extends Consumer<Solution> {
     Solution getSolution();
     S getSpace();
     Constraint<S> getConstraint();
-    Propagator getPropagator();
+    Splitter getSplitter();
     Solver getParent();
+    
+    default  void propagateConstraint(){}
+    default  void preprocess(){}
 
-    default void propagate(){
-        getPropagator().propagate(this, getSpace(), getConstraint());        
+    default void split(){
+        getSplitter().split(this, getSpace(), getConstraint());        
     }
     
     default boolean inside(){
@@ -28,17 +31,21 @@ public interface Solver<S extends Space, Solution> extends Consumer<Solution> {
     }
     
     default boolean solved(){
-        return getSpace().isFixed() && getConstraint().holdsFor(getSpace());
+        return getSpace().isFixed();
     }
     
     default void solve(){
-        if (solved())
-            accept(getSolution());
-        else
-            if (inside())
-                propagate();
+        preprocess();
+        if (inside()){
+            propagateConstraint();
+            if (solved())
+                accept(getSolution());
+            else
+                split();
+        }
     }
     
+    //Consumer interface
     default void accept(Solution s){
         Solver parent = getParent();
         if (parent != null)

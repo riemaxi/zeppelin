@@ -8,14 +8,14 @@ package zeppp.solver;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import zeppp.core.Constraint;
-import zeppp.core.Propagator;
+import zeppp.core.Splitter;
 import zeppp.core.Solver;
 
 /**
  *
  * @author Samuel
  */
-public class LinearSolver implements Solver<LinearSpace, LinearSolution>, Propagator<LinearSpace, LinearConstraint, LinearSolution> {
+public class LinearSolver implements Solver<LinearSpace, LinearSolution>, Splitter<LinearSpace, LinearConstraint, LinearSolution> {
     private LinearSpace space;
     private LinearConstraint constraint;
     private LinearSolver parent;
@@ -48,33 +48,27 @@ public class LinearSolver implements Solver<LinearSpace, LinearSolution>, Propag
     }
 
     @Override
-    public Propagator getPropagator() {
+    public Splitter getSplitter() {
         return this;
     }
 
     @Override
-    public void propagate(Solver parent, LinearSpace space, LinearConstraint constraint) {
+    public void split(Solver parent, LinearSpace space, LinearConstraint constraint) {
         try{
-            Executors.callable(() -> lowPropagation(space)).call();
-            Executors.callable(() -> highPropagation(space)).call();
+            Executors.callable(() -> lowSplitting(space)).call();
+            Executors.callable(() -> highSplitting(space)).call();
         }catch(Exception e){
             System.out.println(e);
         }
     }
     
-    private void lowPropagation(LinearSpace space){
+    private void lowSplitting(LinearSpace space){
         new LinearSolver(this, getConstraint(), space.low());
     }
     
-    private void highPropagation(LinearSpace space){
+    private void highSplitting(LinearSpace space){
         new LinearSolver(this, getConstraint(), space.high());
     }
-
-    /*@Override
-    public void accept(LinearSolution t) {
-        if (parent != null)
-            parent.accept(t);
-    }*/
 
     @Override
     public Solver getParent() {
