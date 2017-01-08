@@ -33,6 +33,14 @@ public class LinearSolver implements Solver<LinearSpace, LinearSolution>, Splitt
     }
     
     @Override
+    public void propagateConstraint(){
+    }
+
+    @Override
+    public void preprocess(){
+    }
+    
+    @Override
     public LinearSolution getSolution() {
         return new LinearSolution(this, getSpace().x);
     }

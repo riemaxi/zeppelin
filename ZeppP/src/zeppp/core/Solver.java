@@ -36,6 +36,8 @@ public interface Solver<S extends Space, Solution>{
         return getConstraint().holdsFor(getSpace());
     }
     
+    default void rejectSpace(){}
+    
     default boolean solved(){
         return getSpace().isFixed();
     }
@@ -48,6 +50,7 @@ public interface Solver<S extends Space, Solution>{
                 sinkSolution();
             else
                 split();
-        }
+        }else
+            rejectSpace();
     }
 }
