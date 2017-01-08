@@ -1,4 +1,6 @@
-package zeppp.core;
+package zeppp.solver;
+
+import zeppp.core.Variable;
 
 /*
  * To change this license header, choose License Headers in Project Properties.

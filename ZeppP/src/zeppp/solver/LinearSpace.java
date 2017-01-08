@@ -6,9 +6,7 @@
 package zeppp.solver;
 
 import java.math.BigInteger;
-import zeppp.core.IntegerVariable;
 import zeppp.core.Space;
-import zeppp.core.Util;
 
 /**
  *

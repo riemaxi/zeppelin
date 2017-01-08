@@ -1,6 +1,6 @@
 
 import java.math.BigInteger;
-import zeppp.core.IntegerVariable;
+import zeppp.solver.IntegerVariable;
 import zeppp.solver.LinearConstraint;
 import zeppp.solver.LinearSolution;
 import zeppp.solver.LinearSolver;

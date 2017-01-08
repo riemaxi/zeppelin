@@ -5,8 +5,6 @@
  */
 package zeppp.solver;
 
-import zeppp.core.IntegerVariable;
-
 /**
  *
  * @author Samuel
