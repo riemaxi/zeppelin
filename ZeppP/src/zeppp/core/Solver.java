@@ -11,16 +11,22 @@ import java.util.stream.Stream;
 /**
  *
  * @author Samuel
+ * @param <S>
+ * @param <Solution>
  */
-public interface Solver<S extends Space, Solution> extends Consumer<Solution> {
+public interface Solver<S extends Space, Solution>{
     Solution getSolution();
     S getSpace();
     Constraint<S> getConstraint();
     Splitter getSplitter();
-    Solver getParent();
+    Consumer<Solution> getSink();
     
     default  void propagateConstraint(){}
     default  void preprocess(){}
+    
+    default void sinkSolution(){
+        getSink().accept(getSolution());
+    }
 
     default void split(){
         getSplitter().split(this, getSpace(), getConstraint());        
@@ -39,16 +45,9 @@ public interface Solver<S extends Space, Solution> extends Consumer<Solution> {
         if (inside()){
             propagateConstraint();
             if (solved())
-                accept(getSolution());
+                sinkSolution();
             else
                 split();
         }
-    }
-    
-    //Consumer interface
-    default void accept(Solution s){
-        Solver parent = getParent();
-        if (parent != null)
-            parent.accept(s);
     }
 }

@@ -15,7 +15,7 @@ import zeppp.core.Solver;
  *
  * @author Samuel
  */
-public class LinearSolver implements Solver<LinearSpace, LinearSolution>, Splitter<LinearSpace, LinearConstraint, LinearSolution> {
+public class LinearSolver implements Solver<LinearSpace, LinearSolution>, Splitter<LinearSpace, LinearConstraint, LinearSolution>, Consumer<LinearSolution> {
     private LinearSpace space;
     private LinearConstraint constraint;
     private LinearSolver parent;
@@ -70,8 +70,20 @@ public class LinearSolver implements Solver<LinearSpace, LinearSolution>, Splitt
         new LinearSolver(this, getConstraint(), space.high());
     }
 
-    @Override
-    public Solver getParent() {
+    public LinearSolver getParent() {
         return parent;
+    }
+
+    @Override
+    public Consumer<LinearSolution> getSink() {
+        return this;
+    }
+
+    @Override
+    public void accept(LinearSolution s) {
+        LinearSolver parent = getParent();
+        if (parent != null){
+            parent.accept(s);
+        }
     }
 }
